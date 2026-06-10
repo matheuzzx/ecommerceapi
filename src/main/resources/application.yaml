@@ -1,3 +1,10 @@
 spring:
   application:
     name: commerceapi
+  datasource:
+    url: jdbc:sqlite:./data/app.db
+    driver-class-name: org.sqlite.JDBC
+
+    sql:
+      init:
+        mode: always
