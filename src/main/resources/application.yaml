@@ -4,7 +4,13 @@ spring:
   datasource:
     url: jdbc:sqlite:./data/app.db
     driver-class-name: org.sqlite.JDBC
-
+    username:
+    password:
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
     sql:
       init:
         mode: always

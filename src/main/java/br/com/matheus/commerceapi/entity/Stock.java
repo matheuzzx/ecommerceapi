@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -33,11 +34,13 @@ public class Stock {
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    @Column(name = "created_at")
-    private CreationTimestamp createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
-    private UpdateTimestamp updatedAt;
+    private Instant updatedAt;
 
     public Integer getAvailable() {
         return quantity - reserved;

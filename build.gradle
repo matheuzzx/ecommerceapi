@@ -29,6 +29,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
 	runtimeOnly 'org.xerial:sqlite-jdbc'
+	implementation 'org.hibernate.orm:hibernate-community-dialects'
 }
 
 tasks.named('test') {

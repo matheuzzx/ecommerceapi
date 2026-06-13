@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 
 @Entity
@@ -47,9 +48,11 @@ public class Product {
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
     private Stock stock;
 
-    @Column(name = "created_at")
-    private CreationTimestamp createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
-    private UpdateTimestamp updatedAt;
+    private Instant updatedAt;
 }

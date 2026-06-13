@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "categories")
 @Getter
@@ -27,9 +29,11 @@ public class Category {
     @Column(nullable = false, length = 500)
     private String description;
 
-    @Column(name = "created_at")
-    private CreationTimestamp createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
-    private UpdateTimestamp updatedAt;
+    private Instant updatedAt;
 }

@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "stores")
 @Getter
@@ -34,11 +36,13 @@ public class Store {
     @JoinColumn(name = "store_owner_id")
     private User storeOwner;
 
-    @Column(name = "created_at")
-    private CreationTimestamp createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
-    private UpdateTimestamp updatedAt;
+    private Instant updatedAt;
 
     public void activate(){
         this.active = true;
