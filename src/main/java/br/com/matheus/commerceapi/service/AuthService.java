@@ -12,10 +12,12 @@ public class AuthService {
 
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
+    JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public User register(String name, String email, String rawPassword, String userRole){
@@ -49,5 +51,26 @@ public class AuthService {
                 .build();
 
         return userRepository.save(user);
+    }
+
+    public String login(String email, String rawPassword){
+
+        if (email == null || email.isBlank() || rawPassword == null || rawPassword.isBlank()) {
+            throw new RuntimeException("email and password are required");
+        }
+
+        String trimmedEmail = email.trim();
+
+        var possibleUser = userRepository.findByEmail(trimmedEmail);
+
+        if(possibleUser.isEmpty()) throw new RuntimeException("user not registered");
+
+        var user = possibleUser.get();
+
+        if(!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            throw new RuntimeException("invalid credentials");
+        }
+
+        return jwtService.generateToken(trimmedEmail, user.getUserRole().toString());
     }
 }
