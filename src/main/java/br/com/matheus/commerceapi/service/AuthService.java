@@ -1,76 +1,149 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.dto.LoginRequestDto;
+import br.com.matheus.commerceapi.dto.RegisterUserRequestDto;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
 import br.com.matheus.commerceapi.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.Map;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    UserRepository userRepository;
-    PasswordEncoder passwordEncoder;
-    JwtService jwtService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-    }
+    public User register(RegisterUserRequestDto request){
 
-    public User register(String name, String email, String rawPassword, String userRole){
+        log.info("🚀 Starting user registration for email: {}", request.email());
 
-        if(name.isBlank() || email.isBlank() || rawPassword.isBlank()){
-            throw new RuntimeException("required field is empty");
-        }
+        validateRequired(Map.of(
+                "Name", request.name(),
+                "Email", request.email(),
+                "Password", request.password(),
+                "Role", request.role()
+        ));
 
-        String trimmedName = name.trim();
-        String trimmedEmail = email.trim().toLowerCase();
+        String validatedEmail = validateAndTrimEmail(request.email());
+        UserRole role = validateAndGetRole(request.role());
 
-        var emailIsValid = EmailValidator.getInstance().isValid(trimmedEmail);
+        log.debug("Email validated: {}, Role: {}", validatedEmail, role);
 
-        if(!emailIsValid) throw new RuntimeException("email is not valid");
-
-        var emailExists = userRepository.existsByEmail(trimmedEmail);
-
-        if(emailExists) throw new RuntimeException("user already exists");
-
-        UserRole role = UserRole.valueOf(userRole.toUpperCase());
-
-        if(role != UserRole.CUSTOMER && role != UserRole.STOREOWNER) throw new RuntimeException("invalid role");
-
-        String hashedPassword = passwordEncoder.encode(rawPassword);
+        String hashedPassword = passwordEncoder.encode(request.password());
 
         User user = User.builder()
-                .name(trimmedName)
-                .email(trimmedEmail)
+                .name(request.name())
+                .email(validatedEmail)
                 .passwordHash(hashedPassword)
                 .userRole(role)
                 .build();
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        log.info("✅ User registered successfully: {} (ID: {})", validatedEmail, savedUser.getId());
+
+        return  savedUser;
     }
 
-    public String login(String email, String rawPassword){
+    public String login(LoginRequestDto request){
 
-        if (email == null || email.isBlank() || rawPassword == null || rawPassword.isBlank()) {
-            throw new RuntimeException("email and password are required");
-        }
+        log.info("🔐 Login attempt for email: {}", request.email());
 
-        String trimmedEmail = email.trim();
+        validateRequired(Map.of(
+                "Email", request.email(),
+                "Password", request.password()
+        ));
 
-        var possibleUser = userRepository.findByEmail(trimmedEmail);
+        String trimmedEmail = request.email().trim();
 
-        if(possibleUser.isEmpty()) throw new RuntimeException("user not registered");
+        log.debug("Searching user by email: {}", trimmedEmail);
 
-        var user = possibleUser.get();
+        var user = validateAndGetUser(trimmedEmail);
 
-        if(!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
-            throw new RuntimeException("invalid credentials");
-        }
+        log.debug("Validating password for user: {}", trimmedEmail);
 
-        return jwtService.generateToken(trimmedEmail, user.getUserRole().toString());
+        validatePassword(request.password(), user.getPasswordHash());
+
+        String token = jwtService.generateToken(trimmedEmail, user.getUserRole().toString());
+
+        log.debug("Validating password for user: {}", trimmedEmail);
+
+        return token;
     }
+
+    private void validateRequired(Map<String, String> fields) {
+        String emptyField = fields.entrySet().stream()
+                .filter(entry -> !StringUtils.hasText(entry.getValue()))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
+
+        if (emptyField != null) {
+            throw new RuntimeException(emptyField + " is required");
+        }
+    }
+
+    private void validatePassword(String password, String userPassword){
+        if(!passwordEncoder.matches(password, userPassword)) {
+            log.warn("❌ Invalid password attempt");
+            throw new RuntimeException("Invalid credentials");
+        }
+    }
+
+    private User validateAndGetUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.warn("❌ User not found: {}", email);
+                    return new RuntimeException("User not registered");
+                });
+    }
+
+
+    private UserRole validateAndGetRole(String roleStr) {
+
+            UserRole role = UserRole.valueOf(roleStr.toUpperCase());
+
+            if (role != UserRole.CUSTOMER && role != UserRole.STOREOWNER) {
+                log.warn("⚠️ Invalid role attempted: {}", roleStr);
+                throw new RuntimeException("Invalid role. Allowed: CUSTOMER, STOREOWNER");
+            }
+
+            return role;
+    }
+
+    private String validateAndTrimEmail(String email){
+        String trimmedEmail = returnTrimmedEmail(email);
+        validateEmailFormat(trimmedEmail);
+        validateUniqueEmail(trimmedEmail);
+        return trimmedEmail;
+    }
+
+    private void validateEmailFormat(String email) {
+        if (!EmailValidator.getInstance().isValid(email)) {
+            log.warn("⚠️ Invalid email format: {}", email);
+            throw new RuntimeException("Email is not valid");
+        }
+    }
+
+    private void validateUniqueEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            log.warn("⚠️ Email already exists: {}", email);
+            throw new RuntimeException("User already exists");
+        }
+    }
+
+    private String returnTrimmedEmail(String email){
+        return email.trim();
+    }
+
 }
