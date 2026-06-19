@@ -4,10 +4,12 @@ import br.com.matheus.commerceapi.dto.LoginRequestDto;
 import br.com.matheus.commerceapi.dto.RegisterUserRequestDto;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
+import br.com.matheus.commerceapi.exception.BusinessException;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -89,14 +91,14 @@ public class AuthService {
                 .orElse(null);
 
         if (emptyField != null) {
-            throw new RuntimeException(emptyField + " is required");
+            throw new BusinessException(emptyField + " is required", HttpStatus.BAD_REQUEST);
         }
     }
 
     private void validatePassword(String password, String userPassword){
         if(!passwordEncoder.matches(password, userPassword)) {
             log.warn("❌ Invalid password attempt");
-            throw new RuntimeException("Invalid credentials");
+            throw new BusinessException("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -104,7 +106,7 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.warn("❌ User not found: {}", email);
-                    return new RuntimeException("User not registered");
+                    return new BusinessException("User not registered", HttpStatus.NOT_FOUND);
                 });
     }
 
@@ -115,7 +117,7 @@ public class AuthService {
 
             if (role != UserRole.CUSTOMER && role != UserRole.STOREOWNER) {
                 log.warn("⚠️ Invalid role attempted: {}", roleStr);
-                throw new RuntimeException("Invalid role. Allowed: CUSTOMER, STOREOWNER");
+                throw new BusinessException("Invalid role. Allowed: CUSTOMER, STOREOWNER", HttpStatus.BAD_REQUEST);
             }
 
             return role;
@@ -131,14 +133,14 @@ public class AuthService {
     private void validateEmailFormat(String email) {
         if (!EmailValidator.getInstance().isValid(email)) {
             log.warn("⚠️ Invalid email format: {}", email);
-            throw new RuntimeException("Email is not valid");
+            throw new BusinessException("Email is not valid", HttpStatus.BAD_REQUEST);
         }
     }
 
     private void validateUniqueEmail(String email) {
         if (userRepository.existsByEmail(email)) {
             log.warn("⚠️ Email already exists: {}", email);
-            throw new RuntimeException("User already exists");
+            throw new BusinessException("User already exists", HttpStatus.CONFLICT);
         }
     }
 
