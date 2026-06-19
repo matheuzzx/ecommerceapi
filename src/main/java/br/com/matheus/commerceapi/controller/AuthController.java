@@ -34,7 +34,7 @@ public class AuthController {
 
         String token = authService.login(request);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(token);
+        return ResponseEntity.status(HttpStatus.OK).body(token);
     }
 
 }
