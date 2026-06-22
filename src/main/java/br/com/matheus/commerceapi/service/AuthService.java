@@ -1,7 +1,8 @@
 package br.com.matheus.commerceapi.service;
 
-import br.com.matheus.commerceapi.dto.LoginRequestDto;
-import br.com.matheus.commerceapi.dto.RegisterUserRequestDto;
+import br.com.matheus.commerceapi.dto.request.LoginRequestDto;
+import br.com.matheus.commerceapi.dto.request.RegisterUserRequestDto;
+import br.com.matheus.commerceapi.dto.response.UserResponse;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
 import br.com.matheus.commerceapi.exception.BusinessException;
@@ -25,7 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public User register(RegisterUserRequestDto request){
+    public UserResponse register(RegisterUserRequestDto request){
 
         log.info("🚀 Starting user registration for email: {}", request.email());
 
@@ -52,9 +53,16 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
+        UserResponse userResponse = new UserResponse(
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getEmail(),
+                savedUser.getUserRole().toString()
+        );
+
         log.info("✅ User registered successfully: {} (ID: {})", validatedEmail, savedUser.getId());
 
-        return  savedUser;
+        return userResponse;
     }
 
     public String login(LoginRequestDto request){
