@@ -1,4 +1,4 @@
-package br.com.matheus.commerceapi.dto;
+package br.com.matheus.commerceapi.dto.request;
 
 public record RegisterUserRequestDto(
         String name,
