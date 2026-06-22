@@ -2,6 +2,7 @@ package br.com.matheus.commerceapi.service;
 
 import br.com.matheus.commerceapi.dto.request.LoginRequestDto;
 import br.com.matheus.commerceapi.dto.request.RegisterUserRequestDto;
+import br.com.matheus.commerceapi.dto.response.TokenResponse;
 import br.com.matheus.commerceapi.dto.response.UserResponse;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
@@ -65,7 +66,7 @@ public class AuthService {
         return userResponse;
     }
 
-    public String login(LoginRequestDto request){
+    public TokenResponse login(LoginRequestDto request){
 
         log.info("🔐 Login attempt for email: {}", request.email());
 
@@ -88,7 +89,7 @@ public class AuthService {
 
         log.debug("Validating password for user: {}", trimmedEmail);
 
-        return token;
+        return new TokenResponse(token);
     }
 
     private void validateRequired(Map<String, String> fields) {
