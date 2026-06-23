@@ -10,13 +10,13 @@ import br.com.matheus.commerceapi.exception.BusinessException;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+import static br.com.matheus.commerceapi.utils.ValidationUtils.validateEmailFormat;
 import static br.com.matheus.commerceapi.utils.ValidationUtils.validateRequired;
 
 @Slf4j
@@ -126,13 +126,6 @@ public class AuthService {
         validateEmailFormat(trimmedEmail);
         validateUniqueEmail(trimmedEmail);
         return trimmedEmail;
-    }
-
-    private void validateEmailFormat(String email) {
-        if (!EmailValidator.getInstance().isValid(email)) {
-            log.warn("⚠️ Invalid email format: {}", email);
-            throw new BusinessException("Email is not valid", HttpStatus.BAD_REQUEST);
-        }
     }
 
     private void validateUniqueEmail(String email) {
