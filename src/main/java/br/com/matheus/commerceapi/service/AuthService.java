@@ -14,9 +14,10 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.Map;
+
+import static br.com.matheus.commerceapi.utils.ValidationUtils.validateRequired;
 
 @Slf4j
 @Service
@@ -90,18 +91,6 @@ public class AuthService {
         log.debug("Validating password for user: {}", trimmedEmail);
 
         return new TokenResponse(token);
-    }
-
-    private void validateRequired(Map<String, String> fields) {
-        String emptyField = fields.entrySet().stream()
-                .filter(entry -> !StringUtils.hasText(entry.getValue()))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(null);
-
-        if (emptyField != null) {
-            throw new BusinessException(emptyField + " is required", HttpStatus.BAD_REQUEST);
-        }
     }
 
     private void validatePassword(String password, String userPassword){
