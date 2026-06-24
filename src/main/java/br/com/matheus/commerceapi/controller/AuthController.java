@@ -2,8 +2,8 @@ package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.LoginRequestDto;
 import br.com.matheus.commerceapi.dto.request.RegisterUserRequestDto;
-import br.com.matheus.commerceapi.dto.response.TokenResponse;
-import br.com.matheus.commerceapi.dto.response.UserResponse;
+import br.com.matheus.commerceapi.dto.response.TokenResponseDto;
+import br.com.matheus.commerceapi.dto.response.UserResponseDto;
 import br.com.matheus.commerceapi.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,17 +23,17 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody RegisterUserRequestDto request){
+    public ResponseEntity<UserResponseDto> register(@RequestBody RegisterUserRequestDto request){
 
-        UserResponse user = authService.register(request);
+        UserResponseDto user = authService.register(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequestDto request){
+    public ResponseEntity<TokenResponseDto> login(@RequestBody LoginRequestDto request){
 
-        TokenResponse token = authService.login(request);
+        TokenResponseDto token = authService.login(request);
 
         return ResponseEntity.status(HttpStatus.OK).body(token);
     }

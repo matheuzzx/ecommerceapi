@@ -1,5 +1,5 @@
 package br.com.matheus.commerceapi.dto.response;
 
-public record TokenResponse(
+public record TokenResponseDto(
         String token
 ) {}
