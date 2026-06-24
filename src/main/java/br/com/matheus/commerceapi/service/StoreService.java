@@ -4,6 +4,7 @@ import br.com.matheus.commerceapi.dto.request.CreateStoreRequestDto;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.exception.BusinessException;
+import br.com.matheus.commerceapi.exception.SlugAlreadyExistsException;
 import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -39,7 +40,7 @@ public class StoreService {
 
         boolean storeExists = storeRepository.existsBySlug(slug);
 
-        if(storeExists) throw new BusinessException("this name is already registered", HttpStatus.BAD_REQUEST);
+        if(storeExists) throw new SlugAlreadyExistsException(slug);
 
         User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
 

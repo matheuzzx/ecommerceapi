@@ -6,11 +6,13 @@ import br.com.matheus.commerceapi.dto.response.TokenResponse;
 import br.com.matheus.commerceapi.dto.response.UserResponse;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
-import br.com.matheus.commerceapi.exception.BusinessException;
+import br.com.matheus.commerceapi.exception.*;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -96,7 +98,7 @@ public class AuthService {
     private void validatePassword(String password, String userPassword){
         if(!passwordEncoder.matches(password, userPassword)) {
             log.warn("❌ Invalid password attempt");
-            throw new BusinessException("Invalid credentials", HttpStatus.UNAUTHORIZED);
+            throw new InvalidCredentialsException();
         }
     }
 
@@ -104,7 +106,7 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.warn("❌ User not found: {}", email);
-                    return new BusinessException("User not registered", HttpStatus.NOT_FOUND);
+                    return new UserNotFoundException();
                 });
     }
 
@@ -115,7 +117,7 @@ public class AuthService {
 
             if (role != UserRole.CUSTOMER && role != UserRole.STOREOWNER) {
                 log.warn("⚠️ Invalid role attempted: {}", roleStr);
-                throw new BusinessException("Invalid role. Allowed: CUSTOMER, STOREOWNER", HttpStatus.BAD_REQUEST);
+                throw new InvalidRoleException("Invalid role. Allowed: CUSTOMER, STOREOWNER");
             }
 
             return role;
@@ -131,7 +133,7 @@ public class AuthService {
     private void validateUniqueEmail(String email) {
         if (userRepository.existsByEmail(email)) {
             log.warn("⚠️ Email already exists: {}", email);
-            throw new BusinessException("User already exists", HttpStatus.CONFLICT);
+            throw new EmailAlreadyExistsException(email);
         }
     }
 

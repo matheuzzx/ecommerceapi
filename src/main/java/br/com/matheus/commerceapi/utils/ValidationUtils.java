@@ -18,14 +18,14 @@ public class ValidationUtils {
                 .orElse(null);
 
         if (emptyField != null) {
-            throw new BusinessException(emptyField + " is required", HttpStatus.BAD_REQUEST);
+            throw new IllegalArgumentException(emptyField + " is required");
         }
     }
 
     public static  void validateEmailFormat(String email) {
         if (!EmailValidator.getInstance().isValid(email)) {
             log.warn("⚠️ Invalid email format: {}", email);
-            throw new BusinessException("Email is not valid", HttpStatus.BAD_REQUEST);
+            throw new IllegalArgumentException("Email is not valid");
         }
     }
 }
