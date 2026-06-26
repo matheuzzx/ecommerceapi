@@ -7,12 +7,15 @@ import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
 import br.com.matheus.commerceapi.exception.InvalidRoleException;
 import br.com.matheus.commerceapi.exception.SlugAlreadyExistsException;
+import br.com.matheus.commerceapi.exception.StoreNotFoundException;
 import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Map;
 
@@ -55,6 +58,14 @@ public class StoreService {
         Store savedStore = storeRepository.save(store);
 
         return StoreResponseDto.fromEntity(savedStore);
+    }
+
+    public StoreResponseDto getStore(Long storeId, Long userId){
+        Store store = storeRepository.findById(storeId).orElseThrow(StoreNotFoundException::new);
+        if (!store.getStoreOwner().getId().equals(userId)) {
+            throw new AccessDeniedException("You don't own this store");
+        }
+        return StoreResponseDto.fromEntity(store);
     }
 
     private String validateAndTrimEmail(String email){

@@ -28,6 +28,18 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.CREATED).body(store);
     }
 
+    @GetMapping("/{storeId}")
+    @PreAuthorize("@storeSecurityService.isStoreOwner(#storeId, #authentication.principal.id) or hasRole('ADMIN')")
+    public ResponseEntity<StoreResponseDto> getStore(
+            @PathVariable Long storeId,
+            Authentication authentication) {
+
+        Long userId = getCurrentUserId(authentication);
+
+        StoreResponseDto response = storeService.getStore(storeId, userId);
+        return ResponseEntity.ok(response);
+    }
+
     private Long getCurrentUserId(Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         assert userDetails != null;
