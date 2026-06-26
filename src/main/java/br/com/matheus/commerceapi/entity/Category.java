@@ -20,7 +20,7 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     private String name;
 
     @Column(nullable = false, length = 100)
@@ -28,6 +28,9 @@ public class Category {
 
     @Column(nullable = false, length = 500)
     private String description;
+
+    @Column(nullable = false)
+    private boolean active = true;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
