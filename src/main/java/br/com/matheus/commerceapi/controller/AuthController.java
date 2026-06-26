@@ -5,6 +5,7 @@ import br.com.matheus.commerceapi.dto.request.RegisterUserRequestDto;
 import br.com.matheus.commerceapi.dto.response.TokenResponseDto;
 import br.com.matheus.commerceapi.dto.response.UserResponseDto;
 import br.com.matheus.commerceapi.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> register(@RequestBody RegisterUserRequestDto request){
+    public ResponseEntity<UserResponseDto> register(@RequestBody @Valid RegisterUserRequestDto request){
 
         UserResponseDto user = authService.register(request);
 
@@ -31,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> login(@RequestBody LoginRequestDto request){
+    public ResponseEntity<TokenResponseDto> login(@RequestBody @Valid LoginRequestDto request){
 
         TokenResponseDto token = authService.login(request);
 
