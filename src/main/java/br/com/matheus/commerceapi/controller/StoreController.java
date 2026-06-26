@@ -50,6 +50,16 @@ public class StoreController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{storeId}")
+    @PreAuthorize("@storeSecurityService.isStoreOwner(#storeId, #authentication.principal.id) or hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteStore(
+            @PathVariable Long storeId,
+            Authentication authentication) {
+
+        storeService.deleteStore(storeId);
+        return ResponseEntity.noContent().build();
+    }
+
     private Long getCurrentUserId(Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         assert userDetails != null;

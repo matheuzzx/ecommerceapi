@@ -79,6 +79,13 @@ public class StoreService {
         return StoreResponseDto.fromEntity(savedStore);
     }
 
+    public void deleteStore(Long storeId){
+        Store store = findStoreById(storeId);
+        User storeOwner = store.getStoreOwner();
+        storeOwner.setStore(null);
+        storeRepository.delete(store);
+    }
+
     private String validateAndTrimEmail(String email){
         String trimmedEmail = email.trim();
         validateEmailFormat(trimmedEmail);
