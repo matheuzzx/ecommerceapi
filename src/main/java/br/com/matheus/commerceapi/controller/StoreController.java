@@ -34,9 +34,7 @@ public class StoreController {
             @PathVariable Long storeId,
             Authentication authentication) {
 
-        Long userId = getCurrentUserId(authentication);
-
-        StoreResponseDto response = storeService.getStore(storeId, userId);
+        StoreResponseDto response = storeService.getStore(storeId);
         return ResponseEntity.ok(response);
     }
 

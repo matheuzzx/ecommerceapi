@@ -12,10 +12,8 @@ import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Map;
 
@@ -60,11 +58,8 @@ public class StoreService {
         return StoreResponseDto.fromEntity(savedStore);
     }
 
-    public StoreResponseDto getStore(Long storeId, Long userId){
-        Store store = storeRepository.findById(storeId).orElseThrow(StoreNotFoundException::new);
-        if (!store.getStoreOwner().getId().equals(userId)) {
-            throw new AccessDeniedException("You don't own this store");
-        }
+    public StoreResponseDto getStore(Long storeId){
+        Store store = findStoreById(storeId);
         return StoreResponseDto.fromEntity(store);
     }
 
@@ -94,5 +89,9 @@ public class StoreService {
         }
 
         return user;
+    }
+
+    private Store findStoreById(Long id){
+        return storeRepository.findById(id).orElseThrow(StoreNotFoundException::new);
     }
 }
