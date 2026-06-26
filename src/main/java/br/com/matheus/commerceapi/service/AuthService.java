@@ -10,6 +10,12 @@ import br.com.matheus.commerceapi.exception.*;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+<<<<<<< HEAD
+=======
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+>>>>>>> aafb604111d2f87a54cd5df65868b0594f52d91c
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

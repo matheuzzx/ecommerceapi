@@ -4,8 +4,12 @@ import br.com.matheus.commerceapi.dto.request.CreateStoreRequestDto;
 import br.com.matheus.commerceapi.dto.response.StoreResponseDto;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.entity.User;
+<<<<<<< HEAD
 import br.com.matheus.commerceapi.enums.UserRole;
 import br.com.matheus.commerceapi.exception.InvalidRoleException;
+=======
+import br.com.matheus.commerceapi.exception.BusinessException;
+>>>>>>> aafb604111d2f87a54cd5df65868b0594f52d91c
 import br.com.matheus.commerceapi.exception.SlugAlreadyExistsException;
 import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
@@ -46,6 +50,11 @@ public class StoreService {
         boolean storeExists = storeRepository.existsBySlug(slug);
 
         if(storeExists) throw new SlugAlreadyExistsException(slug);
+<<<<<<< HEAD
+=======
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+>>>>>>> aafb604111d2f87a54cd5df65868b0594f52d91c
 
         Store store = Store.builder()
                 .storeOwner(user)
