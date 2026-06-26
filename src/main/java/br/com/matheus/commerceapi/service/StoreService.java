@@ -29,31 +29,23 @@ public class StoreService {
 
     public StoreResponseDto createStore(CreateStoreRequestDto request, Long userId) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-
-        if (user.getUserRole() != UserRole.STOREOWNER) {
-            throw new InvalidRoleException("Invalid role, Role Accepted is STOREOWNER");
-        }
+        User user = validateAndGetUser(userId);
 
         validateRequired(Map.of(
                 "Name", request.name(),
                 "Email", request.email()
         ));
 
-        String trimmedEmail = request.email().trim();
-        validateEmailFormat(trimmedEmail);
+        String email = validateAndTrimEmail(request.email());
 
-        String slug = request.name().replace(" ", "_");
+        String slug = toSlug(request.name());
 
-        if (storeRepository.existsBySlug(slug)) {
-            throw new SlugAlreadyExistsException(slug);
-        }
+        validateExistingSlug(slug);
 
         Store store = Store.builder()
                 .storeOwner(user)
                 .name(request.name())
-                .email(trimmedEmail)
+                .email(email)
                 .active(true)
                 .slug(slug)
                 .build();
@@ -63,5 +55,33 @@ public class StoreService {
         Store savedStore = storeRepository.save(store);
 
         return StoreResponseDto.fromEntity(savedStore);
+    }
+
+    private String validateAndTrimEmail(String email){
+        String trimmedEmail = email.trim();
+        validateEmailFormat(trimmedEmail);
+        return trimmedEmail;
+    }
+
+    private void validateExistingSlug(String slug){
+        if (storeRepository.existsBySlug(slug)) {
+            throw new SlugAlreadyExistsException(slug);
+        }
+    }
+
+    private String toSlug(String name){
+        return name.replace(" ", "_");
+    }
+
+    private User validateAndGetUser(Long userId){
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+
+        if (user.getUserRole() != UserRole.STOREOWNER) {
+            throw new InvalidRoleException("Invalid role, Role Accepted is STOREOWNER");
+        }
+
+        return user;
     }
 }
