@@ -22,7 +22,7 @@ public class StoreController {
     }
 
     @PostMapping
-    @PreAuthorize("@storeSecurityService.canCreateStore(#authentication.principal.id)")
+    @PreAuthorize("@storeSecurityService.canCreateStore(#authentication.principal.id) and ")
     public ResponseEntity<StoreResponseDto> register(@RequestBody CreateStoreRequestDto request,  Authentication authentication){
         Long userId = getCurrentUserId(authentication);
         StoreResponseDto store = storeService.createStore(request, userId);

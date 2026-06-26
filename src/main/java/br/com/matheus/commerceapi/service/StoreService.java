@@ -8,6 +8,7 @@ import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
 import br.com.matheus.commerceapi.exception.InvalidRoleException;
 import br.com.matheus.commerceapi.exception.SlugAlreadyExistsException;
+import br.com.matheus.commerceapi.exception.StoreAlreadyExists;
 import br.com.matheus.commerceapi.exception.StoreNotFoundException;
 import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
@@ -32,6 +33,8 @@ public class StoreService {
     public StoreResponseDto createStore(CreateStoreRequestDto request, Long userId) {
 
         User user = validateAndGetUser(userId);
+
+        validateExistingStore(user);
 
         validateRequired(Map.of(
                 "Name", request.name(),
@@ -84,6 +87,10 @@ public class StoreService {
         User storeOwner = store.getStoreOwner();
         storeOwner.setStore(null);
         storeRepository.delete(store);
+    }
+
+    private void validateExistingStore(User user){
+        if(storeRepository.existsByStoreOwner(user)) throw new StoreAlreadyExists();
     }
 
     private String validateAndTrimEmail(String email){
