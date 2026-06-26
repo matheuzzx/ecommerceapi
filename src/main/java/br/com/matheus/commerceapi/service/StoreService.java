@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.service;
 
 import br.com.matheus.commerceapi.dto.request.CreateStoreRequestDto;
+import br.com.matheus.commerceapi.dto.request.UpdateStoreRequestDto;
 import br.com.matheus.commerceapi.dto.response.StoreResponseDto;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.entity.User;
@@ -61,6 +62,21 @@ public class StoreService {
     public StoreResponseDto getStore(Long storeId){
         Store store = findStoreById(storeId);
         return StoreResponseDto.fromEntity(store);
+    }
+
+    public StoreResponseDto updateStore(Long storeId, UpdateStoreRequestDto request){
+
+        validateRequired(Map.of(
+                "Name", request.name()
+        ));
+
+        Store store = findStoreById(storeId);
+
+        store.setName(request.name());
+
+        Store savedStore = storeRepository.save(store);
+
+        return StoreResponseDto.fromEntity(savedStore);
     }
 
     private String validateAndTrimEmail(String email){

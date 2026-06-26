@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.CreateStoreRequestDto;
+import br.com.matheus.commerceapi.dto.request.UpdateStoreRequestDto;
 import br.com.matheus.commerceapi.dto.response.StoreResponseDto;
 import br.com.matheus.commerceapi.security.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.StoreService;
@@ -35,6 +36,17 @@ public class StoreController {
             Authentication authentication) {
 
         StoreResponseDto response = storeService.getStore(storeId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{storeId}")
+    @PreAuthorize("@storeSecurityService.isStoreOwner(#storeId, #authentication.principal.id)")
+    public ResponseEntity<StoreResponseDto> updateStore(
+            @PathVariable Long storeId,
+            @RequestBody UpdateStoreRequestDto request,
+            Authentication authentication) {
+
+        StoreResponseDto response = storeService.updateStore(storeId, request);
         return ResponseEntity.ok(response);
     }
 
