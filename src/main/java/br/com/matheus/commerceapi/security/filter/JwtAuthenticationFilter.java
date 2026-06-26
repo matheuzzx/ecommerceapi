@@ -1,4 +1,4 @@
-package br.com.matheus.commerceapi.security;
+package br.com.matheus.commerceapi.security.filter;
 
 import br.com.matheus.commerceapi.service.JwtService;
 import jakarta.servlet.FilterChain;

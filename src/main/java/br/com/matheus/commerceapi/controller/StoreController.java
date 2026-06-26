@@ -3,7 +3,7 @@ package br.com.matheus.commerceapi.controller;
 import br.com.matheus.commerceapi.dto.request.store.CreateStoreRequestDto;
 import br.com.matheus.commerceapi.dto.request.store.UpdateStoreRequestDto;
 import br.com.matheus.commerceapi.dto.response.store.StoreResponseDto;
-import br.com.matheus.commerceapi.security.UserDetailsImpl;
+import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.StoreService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

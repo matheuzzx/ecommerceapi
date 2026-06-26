@@ -1,7 +1,8 @@
-package br.com.matheus.commerceapi.security;
+package br.com.matheus.commerceapi.security.service;
 
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.repository.UserRepository;
+import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

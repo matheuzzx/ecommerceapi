@@ -1,4 +1,4 @@
-package br.com.matheus.commerceapi.security;
+package br.com.matheus.commerceapi.security.service;
 
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.entity.User;

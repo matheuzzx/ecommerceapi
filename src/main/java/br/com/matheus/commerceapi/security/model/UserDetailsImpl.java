@@ -1,4 +1,4 @@
-package br.com.matheus.commerceapi.security;
+package br.com.matheus.commerceapi.security.model;
 
 import br.com.matheus.commerceapi.entity.User;
 import org.jspecify.annotations.Nullable;

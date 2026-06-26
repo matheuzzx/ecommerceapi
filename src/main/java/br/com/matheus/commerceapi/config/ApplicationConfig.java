@@ -1,7 +1,7 @@
 package br.com.matheus.commerceapi.config;
 
 import br.com.matheus.commerceapi.repository.UserRepository;
-import br.com.matheus.commerceapi.security.UserDetailsImpl;
+import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

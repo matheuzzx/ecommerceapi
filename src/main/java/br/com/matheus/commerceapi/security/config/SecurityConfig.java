@@ -1,6 +1,6 @@
-package br.com.matheus.commerceapi.security;
+package br.com.matheus.commerceapi.security.config;
 
-import lombok.RequiredArgsConstructor;
+import br.com.matheus.commerceapi.security.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
