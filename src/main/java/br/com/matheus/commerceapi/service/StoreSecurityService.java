@@ -20,11 +20,6 @@ public class StoreSecurityService {
         return store != null && store.getStoreOwner().getId().equals(userId);
     }
 
-    public boolean isStoreOwnerRole(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        return user != null && user.getUserRole() == UserRole.STOREOWNER;
-    }
-
     public boolean canCreateStore(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
         return user != null && user.getUserRole() == UserRole.STOREOWNER;
