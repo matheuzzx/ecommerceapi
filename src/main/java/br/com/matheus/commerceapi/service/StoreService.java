@@ -1,8 +1,8 @@
 package br.com.matheus.commerceapi.service;
 
-import br.com.matheus.commerceapi.dto.request.CreateStoreRequestDto;
-import br.com.matheus.commerceapi.dto.request.UpdateStoreRequestDto;
-import br.com.matheus.commerceapi.dto.response.StoreResponseDto;
+import br.com.matheus.commerceapi.dto.request.store.CreateStoreRequestDto;
+import br.com.matheus.commerceapi.dto.request.store.UpdateStoreRequestDto;
+import br.com.matheus.commerceapi.dto.response.store.StoreResponseDto;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;

@@ -1,4 +1,4 @@
-package br.com.matheus.commerceapi.dto.request;
+package br.com.matheus.commerceapi.dto.request.store;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

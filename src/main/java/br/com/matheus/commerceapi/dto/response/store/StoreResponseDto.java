@@ -1,5 +1,6 @@
-package br.com.matheus.commerceapi.dto.response;
+package br.com.matheus.commerceapi.dto.response.store;
 
+import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
 import br.com.matheus.commerceapi.entity.Store;
 
 import java.time.Instant;

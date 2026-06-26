@@ -1,4 +1,4 @@
-package br.com.matheus.commerceapi.dto.response;
+package br.com.matheus.commerceapi.dto.response.auth;
 
 import br.com.matheus.commerceapi.entity.User;
 

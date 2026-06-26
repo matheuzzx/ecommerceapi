@@ -1,9 +1,9 @@
 package br.com.matheus.commerceapi.controller;
 
-import br.com.matheus.commerceapi.dto.request.LoginRequestDto;
-import br.com.matheus.commerceapi.dto.request.RegisterUserRequestDto;
-import br.com.matheus.commerceapi.dto.response.TokenResponseDto;
-import br.com.matheus.commerceapi.dto.response.UserResponseDto;
+import br.com.matheus.commerceapi.dto.request.auth.LoginRequestDto;
+import br.com.matheus.commerceapi.dto.request.auth.RegisterUserRequestDto;
+import br.com.matheus.commerceapi.dto.response.auth.TokenResponseDto;
+import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
 import br.com.matheus.commerceapi.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
