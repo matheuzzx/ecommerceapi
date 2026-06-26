@@ -10,12 +10,6 @@ import br.com.matheus.commerceapi.exception.*;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-<<<<<<< HEAD
-=======
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
->>>>>>> aafb604111d2f87a54cd5df65868b0594f52d91c
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +27,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public UserResponseDto register(RegisterUserRequestDto request){
+    public UserResponseDto register(RegisterUserRequestDto request) {
 
         log.info("🚀 Starting user registration for email: {}", request.email());
 
@@ -72,7 +66,7 @@ public class AuthService {
         return userResponseDto;
     }
 
-    public TokenResponseDto login(LoginRequestDto request){
+    public TokenResponseDto login(LoginRequestDto request) {
 
         log.info("🔐 Login attempt for email: {}", request.email());
 
@@ -98,8 +92,8 @@ public class AuthService {
         return new TokenResponseDto(token);
     }
 
-    private void validatePassword(String password, String userPassword){
-        if(!passwordEncoder.matches(password, userPassword)) {
+    private void validatePassword(String password, String userPassword) {
+        if (!passwordEncoder.matches(password, userPassword)) {
             log.warn("❌ Invalid password attempt");
             throw new InvalidCredentialsException();
         }
@@ -113,20 +107,19 @@ public class AuthService {
                 });
     }
 
-
     private UserRole validateAndGetRole(String roleStr) {
 
-            UserRole role = UserRole.valueOf(roleStr.toUpperCase());
+        UserRole role = UserRole.valueOf(roleStr.toUpperCase());
 
-            if (role != UserRole.CUSTOMER && role != UserRole.STOREOWNER) {
-                log.warn("⚠️ Invalid role attempted: {}", roleStr);
-                throw new InvalidRoleException("Invalid role. Allowed: CUSTOMER, STOREOWNER");
-            }
+        if (role != UserRole.CUSTOMER && role != UserRole.STOREOWNER) {
+            log.warn("⚠️ Invalid role attempted: {}", roleStr);
+            throw new InvalidRoleException("Invalid role. Allowed: CUSTOMER, STOREOWNER");
+        }
 
-            return role;
+        return role;
     }
 
-    private String validateAndTrimEmail(String email){
+    private String validateAndTrimEmail(String email) {
         String trimmedEmail = returnTrimmedEmail(email);
         validateEmailFormat(trimmedEmail);
         validateUniqueEmail(trimmedEmail);
@@ -140,8 +133,7 @@ public class AuthService {
         }
     }
 
-    private String returnTrimmedEmail(String email){
+    private String returnTrimmedEmail(String email) {
         return email.trim();
     }
-
 }
