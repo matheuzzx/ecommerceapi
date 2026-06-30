@@ -12,15 +12,13 @@ import br.com.matheus.commerceapi.exception.StoreAlreadyExists;
 import br.com.matheus.commerceapi.exception.StoreNotFoundException;
 import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
+import br.com.matheus.commerceapi.utils.ValidationUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-
-import static br.com.matheus.commerceapi.utils.ValidationUtils.validateEmailFormat;
-import static br.com.matheus.commerceapi.utils.ValidationUtils.validateRequired;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +27,7 @@ public class StoreService {
 
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
+    private final ValidationUtils validationUtils;
 
     public StoreResponseDto createStore(CreateStoreRequestDto request, Long userId) {
 
@@ -36,7 +35,7 @@ public class StoreService {
 
         validateExistingStore(user);
 
-        validateRequired(Map.of(
+        validationUtils.validateRequired(Map.of(
                 "Name", request.name(),
                 "Email", request.email()
         ));
@@ -69,7 +68,7 @@ public class StoreService {
 
     public StoreResponseDto updateStore(Long storeId, UpdateStoreRequestDto request){
 
-        validateRequired(Map.of(
+        validationUtils.validateRequired(Map.of(
                 "Name", request.name()
         ));
 
@@ -95,7 +94,7 @@ public class StoreService {
 
     private String validateAndTrimEmail(String email){
         String trimmedEmail = email.trim();
-        validateEmailFormat(trimmedEmail);
+        validationUtils.validateEmailFormat(trimmedEmail);
         return trimmedEmail;
     }
 

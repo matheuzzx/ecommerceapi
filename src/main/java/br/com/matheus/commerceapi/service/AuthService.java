@@ -8,15 +8,13 @@ import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
 import br.com.matheus.commerceapi.exception.*;
 import br.com.matheus.commerceapi.repository.UserRepository;
+import br.com.matheus.commerceapi.utils.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-
-import static br.com.matheus.commerceapi.utils.ValidationUtils.validateEmailFormat;
-import static br.com.matheus.commerceapi.utils.ValidationUtils.validateRequired;
 
 @Slf4j
 @Service
@@ -26,12 +24,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final ValidationUtils validationUtils;
 
     public UserResponseDto register(RegisterUserRequestDto request) {
 
         log.info("🚀 Starting user registration for email: {}", request.email());
 
-        validateRequired(Map.of(
+        validationUtils.validateRequired(Map.of(
                 "Name", request.name(),
                 "Email", request.email(),
                 "Password", request.password(),
@@ -70,7 +69,7 @@ public class AuthService {
 
         log.info("🔐 Login attempt for email: {}", request.email());
 
-        validateRequired(Map.of(
+        validationUtils.validateRequired(Map.of(
                 "Email", request.email(),
                 "Password", request.password()
         ));
@@ -121,7 +120,7 @@ public class AuthService {
 
     private String validateAndTrimEmail(String email) {
         String trimmedEmail = returnTrimmedEmail(email);
-        validateEmailFormat(trimmedEmail);
+        validationUtils.validateEmailFormat(trimmedEmail);
         validateUniqueEmail(trimmedEmail);
         return trimmedEmail;
     }
