@@ -27,6 +27,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -141,6 +142,53 @@ class AuthServiceTest {
         // Act & Assert
         assertThatThrownBy(() -> authService.register(request))
                 .isInstanceOf(EmailAlreadyExistsException.class);
+    }
+
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException if Name is Null")
+    void shouldThrowExceptionWhenNameIsNull() {
+        // Arrange
+        RegisterUserRequestDto request = new RegisterUserRequestDto(null, EMAIL, PASSWORD, "CUSTOMER");
+
+        doThrow(new IllegalArgumentException("Name cannot be null or blank"))
+                .when(validationUtils).validateRequired(any());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.register(request);
+        });
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException if Name is Empty")
+    void shouldThrowExceptionWhenNameIsEmpty() {
+        // Arrange
+        RegisterUserRequestDto request = new RegisterUserRequestDto("", EMAIL, PASSWORD, "CUSTOMER");
+
+        doThrow(new IllegalArgumentException("Name cannot be null or blank"))
+                .when(validationUtils).validateRequired(any());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.register(request);
+        });
+    }
+
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException if Name is Only Spaces")
+    void shouldThrowExceptionWhenNameIsOnlySpaces() {
+        // Arrange
+        RegisterUserRequestDto request = new RegisterUserRequestDto("   ", EMAIL, PASSWORD, "CUSTOMER");
+
+        doThrow(new IllegalArgumentException("Name cannot be null or blank"))
+                .when(validationUtils).validateRequired(any());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.register(request);
+        });
     }
 
     // ============================================
