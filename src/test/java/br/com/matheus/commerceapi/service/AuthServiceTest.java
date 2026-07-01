@@ -304,4 +304,49 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
+
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException if Email is Null")
+    void shouldThrowExceptionWhenEmailIsNull() {
+        // Arrange
+        LoginRequestDto request = new LoginRequestDto(null, PASSWORD);
+
+        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
+                .when(validationUtils).validateRequired(any());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.login(request);
+        });
+    }
+
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException if Email is Empty")
+    void shouldThrowExceptionWhenEmailIsEmpty() {
+        // Arrange
+        LoginRequestDto request = new LoginRequestDto("", PASSWORD);
+
+        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
+                .when(validationUtils).validateRequired(any());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.login(request);
+        });
+    }
+
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException if Email is Only Spaces")
+    void shouldThrowExceptionWhenEmailIsOnlySpaces() {
+        // Arrange
+        LoginRequestDto request = new LoginRequestDto("   ", PASSWORD);
+
+        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
+                .when(validationUtils).validateRequired(any());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.login(request);
+        });
+    }
 }
