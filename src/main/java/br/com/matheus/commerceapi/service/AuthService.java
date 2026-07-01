@@ -71,10 +71,11 @@ public class AuthService {
 
         log.info("🔐 Login attempt for email: {}", request.email());
 
-        validationUtils.validateRequired(Map.of(
-                "Email", request.email(),
-                "Password", request.password()
-        ));
+        Map<String, String> fields = new HashMap<>();
+        fields.put("Email", request.email());
+        fields.put("Password", request.password());
+
+        validationUtils.validateRequired(fields);
 
         String trimmedEmail = request.email().trim();
 
