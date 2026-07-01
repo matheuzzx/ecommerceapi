@@ -191,6 +191,53 @@ class AuthServiceTest {
         });
     }
 
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException if Password is Null")
+    void shouldThrowExceptionWhenPasswordIsNull() {
+        // Arrange
+        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, null, "CUSTOMER");
+
+        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
+                .when(validationUtils).validateRequired(any());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.register(request);
+        });
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException if Password is Empty")
+    void shouldThrowExceptionWhenPasswordIsEmpty() {
+        // Arrange
+        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, "", "CUSTOMER");
+
+        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
+                .when(validationUtils).validateRequired(any());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.register(request);
+        });
+    }
+
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException if Password is Only Spaces")
+    void shouldThrowExceptionWhenPasswordIsOnlySpaces() {
+        // Arrange
+        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, "   ", "CUSTOMER");
+
+        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
+                .when(validationUtils).validateRequired(any());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.register(request);
+        });
+    }
+
     // ============================================
     // LOGIN TESTS
     // ============================================
