@@ -13,9 +13,12 @@ import br.com.matheus.commerceapi.exception.UserNotFoundException;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -24,11 +27,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,292 +66,260 @@ class AuthServiceTest {
     // REGISTER TESTS
     // ============================================
 
-    @ParameterizedTest
-    @ValueSource(strings = {"CUSTOMER", "STOREOWNER"})
-    @DisplayName("Should register user with valid role")
-    void shouldRegisterUserWithValidRole(String role) {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, role);
+    @Nested
+    @DisplayName("Register Tests")
+    class RegisterTests {
 
-        User savedUser = User.builder()
-                .id(ID)
-                .name(NAME)
-                .email(EMAIL)
-                .passwordHash(HASHED)
-                .userRole(UserRole.valueOf(role))
-                .store(null)
-                .build();
+        @ParameterizedTest
+        @ValueSource(strings = {"CUSTOMER", "STOREOWNER"})
+        @DisplayName("Should register user with valid role")
+        void shouldRegisterUserWithValidRole(String role) {
+            // Arrange
+            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, role);
 
-        doNothing().when(validationUtils).validateRequired(any());
-        doNothing().when(validationUtils).validateEmailFormat(any());
-        when(passwordEncoder.encode(PASSWORD)).thenReturn(HASHED);
-        when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+            User savedUser = User.builder()
+                    .id(ID)
+                    .name(NAME)
+                    .email(EMAIL)
+                    .passwordHash(HASHED)
+                    .userRole(UserRole.valueOf(role))
+                    .store(null)
+                    .build();
 
-        // Act
-        UserResponseDto response = authService.register(request);
+            doNothing().when(validationUtils).validateRequired(any());
+            doNothing().when(validationUtils).validateEmailFormat(any());
+            when(passwordEncoder.encode(PASSWORD)).thenReturn(HASHED);
+            when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
+            when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        // Assert - Response
-        assertThat(response.id()).isEqualTo(ID);
-        assertThat(response.name()).isEqualTo(NAME);
-        assertThat(response.email()).isEqualTo(EMAIL);
-        assertThat(response.role()).isEqualTo(role);
+            // Act
+            UserResponseDto response = authService.register(request);
 
-        // Assert - Business rule: store is always null on registration
-        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(userCaptor.capture());
-        User capturedUser = userCaptor.getValue();
+            // Assert
+            assertThat(response.id()).isEqualTo(ID);
+            assertThat(response.name()).isEqualTo(NAME);
+            assertThat(response.email()).isEqualTo(EMAIL);
+            assertThat(response.role()).isEqualTo(role);
+        }
 
-        assertThat(capturedUser.getStore()).isNull();
-    }
+        @Test
+        @DisplayName("Should always set store as null when registering a new user")
+        void shouldAlwaysSetStoreAsNullOnRegistration() {
+            // Arrange
+            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "CUSTOMER");
 
-    @Test
-    @DisplayName("Should throw exception when role is ADMIN")
-    void shouldThrowExceptionWhenRoleIsAdmin() {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "ADMIN");
+            User savedUser = User.builder()
+                    .id(ID)
+                    .name(NAME)
+                    .email(EMAIL)
+                    .passwordHash(HASHED)
+                    .userRole(UserRole.CUSTOMER)
+                    .store(null)
+                    .build();
 
-        doNothing().when(validationUtils).validateRequired(any());
-        doNothing().when(validationUtils).validateEmailFormat(any());
+            doNothing().when(validationUtils).validateRequired(any());
+            doNothing().when(validationUtils).validateEmailFormat(any());
+            when(passwordEncoder.encode(PASSWORD)).thenReturn(HASHED);
+            when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
+            when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        // Act & Assert
-        assertThatThrownBy(() -> authService.register(request))
-                .isInstanceOf(InvalidRoleException.class);
-    }
-
-    @Test
-    @DisplayName("Should throw exception when email is invalid")
-    void shouldThrowExceptionWhenEmailIsInvalid() {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, "invalid_email", PASSWORD, "CUSTOMER");
-
-        doNothing().when(validationUtils).validateRequired(any());
-        doThrow(new IllegalArgumentException("Email is not valid"))
-                .when(validationUtils).validateEmailFormat("invalid_email");
-
-        // Act & Assert
-        assertThatThrownBy(() -> authService.register(request))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    @DisplayName("Should throw exception when email already exists")
-    void shouldThrowExceptionWhenEmailAlreadyExists() {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "CUSTOMER");
-
-        doNothing().when(validationUtils).validateRequired(any());
-        doNothing().when(validationUtils).validateEmailFormat(EMAIL);
-        when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
-
-        // Act & Assert
-        assertThatThrownBy(() -> authService.register(request))
-                .isInstanceOf(EmailAlreadyExistsException.class);
-    }
-
-    @Test
-    @DisplayName("Should Throw IllegalArgumentException if Name is Null")
-    void shouldThrowExceptionWhenNameIsNull() {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto(null, EMAIL, PASSWORD, "CUSTOMER");
-
-        doThrow(new IllegalArgumentException("Name cannot be null or blank"))
-                .when(validationUtils).validateRequired(any());
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
+            // Act
             authService.register(request);
-        });
 
-        verify(userRepository, never()).save(any(User.class));
-    }
+            // Assert
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userRepository).save(userCaptor.capture());
+            User capturedUser = userCaptor.getValue();
 
-    @Test
-    @DisplayName("Should Throw IllegalArgumentException if Name is Empty")
-    void shouldThrowExceptionWhenNameIsEmpty() {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto("", EMAIL, PASSWORD, "CUSTOMER");
+            assertThat(capturedUser.getStore()).isNull();
+        }
 
-        doThrow(new IllegalArgumentException("Name cannot be null or blank"))
-                .when(validationUtils).validateRequired(any());
+        @Test
+        @DisplayName("Should throw exception when role is ADMIN")
+        void shouldThrowExceptionWhenRoleIsAdmin() {
+            // Arrange
+            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "ADMIN");
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.register(request);
-        });
-    }
+            doNothing().when(validationUtils).validateRequired(any());
+            doNothing().when(validationUtils).validateEmailFormat(any());
 
-    @Test
-    @DisplayName("Should Throw IllegalArgumentException if Name is Only Spaces")
-    void shouldThrowExceptionWhenNameIsOnlySpaces() {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto("   ", EMAIL, PASSWORD, "CUSTOMER");
+            // Act & Assert
+            assertThatThrownBy(() -> authService.register(request))
+                    .isInstanceOf(InvalidRoleException.class);
+        }
 
-        doThrow(new IllegalArgumentException("Name cannot be null or blank"))
-                .when(validationUtils).validateRequired(any());
+        @Test
+        @DisplayName("Should throw exception when email format is invalid")
+        void shouldThrowExceptionWhenEmailIsInvalid() {
+            // Arrange
+            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, "invalid_email", PASSWORD, "CUSTOMER");
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.register(request);
-        });
-    }
+            doNothing().when(validationUtils).validateRequired(any());
+            doThrow(new IllegalArgumentException("Email is not valid"))
+                    .when(validationUtils).validateEmailFormat("invalid_email");
 
-    @Test
-    @DisplayName("Should Throw IllegalArgumentException if Password is Null")
-    void shouldThrowExceptionWhenPasswordIsNull() {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, null, "CUSTOMER");
+            // Act & Assert
+            assertThatThrownBy(() -> authService.register(request))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
 
-        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
-                .when(validationUtils).validateRequired(any());
+        @Test
+        @DisplayName("Should throw exception when email already exists")
+        void shouldThrowExceptionWhenEmailAlreadyExists() {
+            // Arrange
+            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "CUSTOMER");
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.register(request);
-        });
+            doNothing().when(validationUtils).validateRequired(any());
+            doNothing().when(validationUtils).validateEmailFormat(EMAIL);
+            when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
 
-        verify(userRepository, never()).save(any(User.class));
-    }
+            // Act & Assert
+            assertThatThrownBy(() -> authService.register(request))
+                    .isInstanceOf(EmailAlreadyExistsException.class);
+        }
 
-    @Test
-    @DisplayName("Should Throw IllegalArgumentException if Password is Empty")
-    void shouldThrowExceptionWhenPasswordIsEmpty() {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, "", "CUSTOMER");
+        @ParameterizedTest
+        @MethodSource("invalidRegisterFieldsProvider")
+        @DisplayName("Should throw exception when any required field is null, empty, or blank")
+        void shouldThrowExceptionWhenRequiredFieldIsInvalid(String fieldName, String invalidValue) {
+            // Arrange
+            RegisterUserRequestDto request = new RegisterUserRequestDto(
+                    fieldName.equals("name") ? invalidValue : NAME,
+                    fieldName.equals("email") ? invalidValue : EMAIL,
+                    fieldName.equals("password") ? invalidValue : PASSWORD,
+                    "CUSTOMER"
+            );
 
-        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
-                .when(validationUtils).validateRequired(any());
+            doThrow(new IllegalArgumentException("Field cannot be null or blank"))
+                    .when(validationUtils).validateRequired(any());
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.register(request);
-        });
-    }
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> authService.register(request));
 
-    @Test
-    @DisplayName("Should Throw IllegalArgumentException if Password is Only Spaces")
-    void shouldThrowExceptionWhenPasswordIsOnlySpaces() {
-        // Arrange
-        RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, "   ", "CUSTOMER");
+            verify(userRepository, never()).save(any(User.class));
+            verify(passwordEncoder, never()).encode(anyString());
+        }
 
-        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
-                .when(validationUtils).validateRequired(any());
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.register(request);
-        });
+        private static Stream<Arguments> invalidRegisterFieldsProvider() {
+            return Stream.of(
+                    Arguments.of("name", null),
+                    Arguments.of("name", ""),
+                    Arguments.of("name", "   "),
+                    Arguments.of("name", "\t"),
+                    Arguments.of("email", null),
+                    Arguments.of("email", ""),
+                    Arguments.of("email", "   "),
+                    Arguments.of("email", "\t"),
+                    Arguments.of("password", null),
+                    Arguments.of("password", ""),
+                    Arguments.of("password", "   "),
+                    Arguments.of("password", "\t")
+            );
+        }
     }
 
     // ============================================
     // LOGIN TESTS
     // ============================================
 
-    @Test
-    @DisplayName("Should login successfully")
-    void shouldLoginSuccessfully() {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
+    @Nested
+    @DisplayName("Login Tests")
+    class LoginTests {
 
-        User user = User.builder()
-                .id(ID)
-                .email(EMAIL)
-                .passwordHash(HASHED)
-                .userRole(UserRole.CUSTOMER)
-                .store(null)
-                .build();
+        @Test
+        @DisplayName("Should login successfully")
+        void shouldLoginSuccessfully() {
+            // Arrange
+            LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
 
-        doNothing().when(validationUtils).validateRequired(any());
-        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(PASSWORD, HASHED)).thenReturn(true);
-        when(jwtService.generateToken(EMAIL, "CUSTOMER")).thenReturn(TOKEN);
+            User user = User.builder()
+                    .id(ID)
+                    .email(EMAIL)
+                    .passwordHash(HASHED)
+                    .userRole(UserRole.CUSTOMER)
+                    .store(null)
+                    .build();
 
-        // Act
-        TokenResponseDto response = authService.login(request);
+            doNothing().when(validationUtils).validateRequired(any());
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+            when(passwordEncoder.matches(PASSWORD, HASHED)).thenReturn(true);
+            when(jwtService.generateToken(EMAIL, "CUSTOMER")).thenReturn(TOKEN);
 
-        // Assert
-        assertThat(response.token()).isEqualTo(TOKEN);
-    }
+            // Act
+            TokenResponseDto response = authService.login(request);
 
-    @Test
-    @DisplayName("Should throw exception when user not found")
-    void shouldThrowExceptionWhenUserNotFound() {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
+            // Assert
+            assertThat(response.token()).isEqualTo(TOKEN);
+        }
 
-        doNothing().when(validationUtils).validateRequired(any());
-        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+        @Test
+        @DisplayName("Should throw exception when user not found")
+        void shouldThrowExceptionWhenUserNotFound() {
+            // Arrange
+            LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
 
-        // Act & Assert
-        assertThatThrownBy(() -> authService.login(request))
-                .isInstanceOf(UserNotFoundException.class);
-    }
+            doNothing().when(validationUtils).validateRequired(any());
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
 
-    @Test
-    @DisplayName("Should throw exception when password is wrong")
-    void shouldThrowExceptionWhenPasswordIsWrong() {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto(EMAIL, "wrong");
+            // Act & Assert
+            assertThatThrownBy(() -> authService.login(request))
+                    .isInstanceOf(UserNotFoundException.class);
+        }
 
-        User user = User.builder()
-                .id(ID)
-                .email(EMAIL)
-                .passwordHash(HASHED)
-                .userRole(UserRole.CUSTOMER)
-                .store(null)
-                .build();
+        @Test
+        @DisplayName("Should throw exception when password is wrong")
+        void shouldThrowExceptionWhenPasswordIsWrong() {
+            // Arrange
+            LoginRequestDto request = new LoginRequestDto(EMAIL, "wrong");
 
-        doNothing().when(validationUtils).validateRequired(any());
-        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("wrong", HASHED)).thenReturn(false);
+            User user = User.builder()
+                    .id(ID)
+                    .email(EMAIL)
+                    .passwordHash(HASHED)
+                    .userRole(UserRole.CUSTOMER)
+                    .store(null)
+                    .build();
 
-        // Act & Assert
-        assertThatThrownBy(() -> authService.login(request))
-                .isInstanceOf(InvalidCredentialsException.class);
-    }
+            doNothing().when(validationUtils).validateRequired(any());
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+            when(passwordEncoder.matches("wrong", HASHED)).thenReturn(false);
 
-    @Test
-    @DisplayName("Should Throw IllegalArgumentException if Email is Null")
-    void shouldThrowExceptionWhenEmailIsNull() {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto(null, PASSWORD);
+            // Act & Assert
+            assertThatThrownBy(() -> authService.login(request))
+                    .isInstanceOf(InvalidCredentialsException.class);
+        }
 
-        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
-                .when(validationUtils).validateRequired(any());
+        @ParameterizedTest
+        @MethodSource("invalidLoginFieldsProvider")
+        @DisplayName("Should throw exception when login fields are null, empty, or blank")
+        void shouldThrowExceptionWhenLoginFieldIsInvalid(String fieldName, String invalidValue) {
+            // Arrange
+            LoginRequestDto request = new LoginRequestDto(
+                    fieldName.equals("email") ? invalidValue : EMAIL,
+                    fieldName.equals("password") ? invalidValue : PASSWORD
+            );
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.login(request);
-        });
-    }
+            doThrow(new IllegalArgumentException("Field cannot be null or blank"))
+                    .when(validationUtils).validateRequired(any());
 
-    @Test
-    @DisplayName("Should Throw IllegalArgumentException if Email is Empty")
-    void shouldThrowExceptionWhenEmailIsEmpty() {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto("", PASSWORD);
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> authService.login(request));
 
-        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
-                .when(validationUtils).validateRequired(any());
+            verify(userRepository, never()).findByEmail(anyString());
+            verify(passwordEncoder, never()).matches(anyString(), anyString());
+        }
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.login(request);
-        });
-    }
-
-    @Test
-    @DisplayName("Should Throw IllegalArgumentException if Email is Only Spaces")
-    void shouldThrowExceptionWhenEmailIsOnlySpaces() {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto("   ", PASSWORD);
-
-        doThrow(new IllegalArgumentException("Password cannot be null or blank"))
-                .when(validationUtils).validateRequired(any());
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.login(request);
-        });
+        private static Stream<Arguments> invalidLoginFieldsProvider() {
+            return Stream.of(
+                    Arguments.of("email", null),
+                    Arguments.of("email", ""),
+                    Arguments.of("email", "   "),
+                    Arguments.of("email", "\t"),
+                    Arguments.of("password", null),
+                    Arguments.of("password", ""),
+                    Arguments.of("password", "   "),
+                    Arguments.of("password", "\t")
+            );
+        }
     }
 }
