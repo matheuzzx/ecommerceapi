@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -30,12 +31,13 @@ public class AuthService {
 
         log.info("🚀 Starting user registration for email: {}", request.email());
 
-        validationUtils.validateRequired(Map.of(
-                "Name", request.name(),
-                "Email", request.email(),
-                "Password", request.password(),
-                "Role", request.role()
-        ));
+        Map<String, String> fields = new HashMap<>();
+        fields.put("Name", request.name());
+        fields.put("Email", request.email());
+        fields.put("Password", request.password());
+        fields.put("Role", request.role());
+
+        validationUtils.validateRequired(fields);
 
         String validatedEmail = validateAndTrimEmail(request.email());
         UserRole role = validateAndGetRole(request.role());
