@@ -70,151 +70,156 @@ class AuthServiceTest {
     @DisplayName("Register Tests")
     class RegisterTests {
 
-        @ParameterizedTest
-        @ValueSource(strings = {"CUSTOMER", "STOREOWNER"})
-        @DisplayName("Should register user with valid role")
-        void shouldRegisterUserWithValidRole(String role) {
-            // Arrange
-            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, role);
+        // ===== SUCCESS SCENARIOS =====
 
-            User savedUser = User.builder()
-                    .id(ID)
-                    .name(NAME)
-                    .email(EMAIL)
-                    .passwordHash(HASHED)
-                    .userRole(UserRole.valueOf(role))
-                    .store(null)
-                    .build();
+        @Nested
+        @DisplayName("Success Scenarios")
+        class SuccessScenarios {
 
-            doNothing().when(validationUtils).validateRequired(any());
-            doNothing().when(validationUtils).validateEmailFormat(any());
-            when(passwordEncoder.encode(PASSWORD)).thenReturn(HASHED);
-            when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
-            when(userRepository.save(any(User.class))).thenReturn(savedUser);
+            @ParameterizedTest
+            @ValueSource(strings = {"CUSTOMER", "STOREOWNER"})
+            @DisplayName("Should register user with valid role")
+            void shouldRegisterUserWithValidRole(String role) {
+                // Arrange
+                RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, role);
+                User savedUser = createUser(role);
 
-            // Act
-            UserResponseDto response = authService.register(request);
+                mockValidationPass();
+                when(passwordEncoder.encode(PASSWORD)).thenReturn(HASHED);
+                when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
+                when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-            // Assert
-            assertThat(response.id()).isEqualTo(ID);
-            assertThat(response.name()).isEqualTo(NAME);
-            assertThat(response.email()).isEqualTo(EMAIL);
-            assertThat(response.role()).isEqualTo(role);
+                // Act
+                UserResponseDto response = authService.register(request);
+
+                // Assert
+                assertResponse(response, role);
+            }
+
+            @Test
+            @DisplayName("Should always set store as null when registering a new user")
+            void shouldAlwaysSetStoreAsNullOnRegistration() {
+                // Arrange
+                RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "CUSTOMER");
+                User savedUser = createUser("CUSTOMER");
+
+                mockValidationPass();
+                when(passwordEncoder.encode(PASSWORD)).thenReturn(HASHED);
+                when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
+                when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+                // Act
+                authService.register(request);
+
+                // Assert
+                ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+                verify(userRepository).save(userCaptor.capture());
+                assertThat(userCaptor.getValue().getStore()).isNull();
+            }
         }
 
-        @Test
-        @DisplayName("Should always set store as null when registering a new user")
-        void shouldAlwaysSetStoreAsNullOnRegistration() {
-            // Arrange
-            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "CUSTOMER");
+        // ===== VALIDATION TESTS =====
 
-            User savedUser = User.builder()
-                    .id(ID)
-                    .name(NAME)
-                    .email(EMAIL)
-                    .passwordHash(HASHED)
-                    .userRole(UserRole.CUSTOMER)
-                    .store(null)
-                    .build();
+        @Nested
+        @DisplayName("Validation Tests")
+        class ValidationTests {
 
-            doNothing().when(validationUtils).validateRequired(any());
-            doNothing().when(validationUtils).validateEmailFormat(any());
-            when(passwordEncoder.encode(PASSWORD)).thenReturn(HASHED);
-            when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
-            when(userRepository.save(any(User.class))).thenReturn(savedUser);
+            @Test
+            @DisplayName("Should throw exception when email format is invalid")
+            void shouldThrowExceptionWhenEmailIsInvalid() {
+                // Arrange
+                String invalidEmail = "invalid_email";
+                RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, invalidEmail, PASSWORD, "CUSTOMER");
 
-            // Act
-            authService.register(request);
+                doNothing().when(validationUtils).validateRequired(any());
+                doThrow(new IllegalArgumentException("Email is not valid"))
+                        .when(validationUtils).validateEmailFormat(invalidEmail);
 
-            // Assert
-            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-            verify(userRepository).save(userCaptor.capture());
-            User capturedUser = userCaptor.getValue();
+                // Act & Assert
+                assertThatThrownBy(() -> authService.register(request))
+                        .isInstanceOf(IllegalArgumentException.class);
 
-            assertThat(capturedUser.getStore()).isNull();
+                verify(userRepository, never()).save(any(User.class));
+                verify(passwordEncoder, never()).encode(anyString());
+            }
+
+            @ParameterizedTest
+            @MethodSource("invalidRegisterFieldsProvider")
+            @DisplayName("Should throw exception when any required field is invalid")
+            void shouldThrowExceptionWhenRequiredFieldIsInvalid(String fieldName, String invalidValue) {
+                // Arrange
+                RegisterUserRequestDto request = new RegisterUserRequestDto(
+                        fieldName.equals("name") ? invalidValue : NAME,
+                        fieldName.equals("email") ? invalidValue : EMAIL,
+                        fieldName.equals("password") ? invalidValue : PASSWORD,
+                        "CUSTOMER"
+                );
+
+                doThrow(new IllegalArgumentException("Field cannot be null or blank"))
+                        .when(validationUtils).validateRequired(any());
+
+                // Act & Assert
+                assertThrows(IllegalArgumentException.class, () -> authService.register(request));
+
+                verifyNoInteractionsWithRepository();
+            }
+
+            private static Stream<Arguments> invalidRegisterFieldsProvider() {
+                return Stream.of(
+                        Arguments.of("name", null),
+                        Arguments.of("name", ""),
+                        Arguments.of("name", "   "),
+                        Arguments.of("name", "\t"),
+                        Arguments.of("email", null),
+                        Arguments.of("email", ""),
+                        Arguments.of("email", "   "),
+                        Arguments.of("email", "\t"),
+                        Arguments.of("password", null),
+                        Arguments.of("password", ""),
+                        Arguments.of("password", "   "),
+                        Arguments.of("password", "\t")
+                );
+            }
         }
 
-        @Test
-        @DisplayName("Should throw exception when role is ADMIN")
-        void shouldThrowExceptionWhenRoleIsAdmin() {
-            // Arrange
-            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "ADMIN");
+        // ===== EXCEPTION TESTS =====
 
-            doNothing().when(validationUtils).validateRequired(any());
-            doNothing().when(validationUtils).validateEmailFormat(any());
+        @Nested
+        @DisplayName("Exception Tests")
+        class ExceptionTests {
 
-            // Act & Assert
-            assertThatThrownBy(() -> authService.register(request))
-                    .isInstanceOf(InvalidRoleException.class);
-        }
+            @Test
+            @DisplayName("Should throw exception when role is ADMIN")
+            void shouldThrowExceptionWhenRoleIsAdmin() {
+                // Arrange
+                RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "ADMIN");
 
-        @Test
-        @DisplayName("Should throw exception when email format is invalid")
-        void shouldThrowExceptionWhenEmailIsInvalid() {
-            // Arrange
-            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, "invalid_email", PASSWORD, "CUSTOMER");
+                mockValidationPass();
 
-            doNothing().when(validationUtils).validateRequired(any());
-            doThrow(new IllegalArgumentException("Email is not valid"))
-                    .when(validationUtils).validateEmailFormat("invalid_email");
+                // Act & Assert
+                assertThatThrownBy(() -> authService.register(request))
+                        .isInstanceOf(InvalidRoleException.class);
 
-            // Act & Assert
-            assertThatThrownBy(() -> authService.register(request))
-                    .isInstanceOf(IllegalArgumentException.class);
-        }
+                verify(userRepository, never()).save(any(User.class));
+                verify(passwordEncoder, never()).encode(anyString());
+            }
 
-        @Test
-        @DisplayName("Should throw exception when email already exists")
-        void shouldThrowExceptionWhenEmailAlreadyExists() {
-            // Arrange
-            RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "CUSTOMER");
+            @Test
+            @DisplayName("Should throw exception when email already exists")
+            void shouldThrowExceptionWhenEmailAlreadyExists() {
+                // Arrange
+                RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "CUSTOMER");
 
-            doNothing().when(validationUtils).validateRequired(any());
-            doNothing().when(validationUtils).validateEmailFormat(EMAIL);
-            when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
+                mockValidationPass();
+                when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
 
-            // Act & Assert
-            assertThatThrownBy(() -> authService.register(request))
-                    .isInstanceOf(EmailAlreadyExistsException.class);
-        }
+                // Act & Assert
+                assertThatThrownBy(() -> authService.register(request))
+                        .isInstanceOf(EmailAlreadyExistsException.class);
 
-        @ParameterizedTest
-        @MethodSource("invalidRegisterFieldsProvider")
-        @DisplayName("Should throw exception when any required field is null, empty, or blank")
-        void shouldThrowExceptionWhenRequiredFieldIsInvalid(String fieldName, String invalidValue) {
-            // Arrange
-            RegisterUserRequestDto request = new RegisterUserRequestDto(
-                    fieldName.equals("name") ? invalidValue : NAME,
-                    fieldName.equals("email") ? invalidValue : EMAIL,
-                    fieldName.equals("password") ? invalidValue : PASSWORD,
-                    "CUSTOMER"
-            );
-
-            doThrow(new IllegalArgumentException("Field cannot be null or blank"))
-                    .when(validationUtils).validateRequired(any());
-
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () -> authService.register(request));
-
-            verify(userRepository, never()).save(any(User.class));
-            verify(passwordEncoder, never()).encode(anyString());
-        }
-
-        private static Stream<Arguments> invalidRegisterFieldsProvider() {
-            return Stream.of(
-                    Arguments.of("name", null),
-                    Arguments.of("name", ""),
-                    Arguments.of("name", "   "),
-                    Arguments.of("name", "\t"),
-                    Arguments.of("email", null),
-                    Arguments.of("email", ""),
-                    Arguments.of("email", "   "),
-                    Arguments.of("email", "\t"),
-                    Arguments.of("password", null),
-                    Arguments.of("password", ""),
-                    Arguments.of("password", "   "),
-                    Arguments.of("password", "\t")
-            );
+                verify(userRepository, never()).save(any(User.class));
+                verify(passwordEncoder, never()).encode(anyString());
+            }
         }
     }
 
@@ -226,100 +231,142 @@ class AuthServiceTest {
     @DisplayName("Login Tests")
     class LoginTests {
 
-        @Test
-        @DisplayName("Should login successfully")
-        void shouldLoginSuccessfully() {
-            // Arrange
-            LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
+        // ===== SUCCESS SCENARIOS =====
 
-            User user = User.builder()
-                    .id(ID)
-                    .email(EMAIL)
-                    .passwordHash(HASHED)
-                    .userRole(UserRole.CUSTOMER)
-                    .store(null)
-                    .build();
+        @Nested
+        @DisplayName("Success Scenarios")
+        class SuccessScenarios {
 
-            doNothing().when(validationUtils).validateRequired(any());
-            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
-            when(passwordEncoder.matches(PASSWORD, HASHED)).thenReturn(true);
-            when(jwtService.generateToken(EMAIL, "CUSTOMER")).thenReturn(TOKEN);
+            @Test
+            @DisplayName("Should login successfully")
+            void shouldLoginSuccessfully() {
+                // Arrange
+                LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
+                User user = createUser("CUSTOMER");
 
-            // Act
-            TokenResponseDto response = authService.login(request);
+                mockValidationPass();
+                when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+                when(passwordEncoder.matches(PASSWORD, HASHED)).thenReturn(true);
+                when(jwtService.generateToken(EMAIL, "CUSTOMER")).thenReturn(TOKEN);
 
-            // Assert
-            assertThat(response.token()).isEqualTo(TOKEN);
+                // Act
+                TokenResponseDto response = authService.login(request);
+
+                // Assert
+                assertThat(response.token()).isEqualTo(TOKEN);
+            }
         }
 
-        @Test
-        @DisplayName("Should throw exception when user not found")
-        void shouldThrowExceptionWhenUserNotFound() {
-            // Arrange
-            LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
+        // ===== VALIDATION TESTS =====
 
-            doNothing().when(validationUtils).validateRequired(any());
-            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+        @Nested
+        @DisplayName("Validation Tests")
+        class ValidationTests {
 
-            // Act & Assert
-            assertThatThrownBy(() -> authService.login(request))
-                    .isInstanceOf(UserNotFoundException.class);
+            @ParameterizedTest
+            @MethodSource("invalidLoginFieldsProvider")
+            @DisplayName("Should throw exception when login fields are invalid")
+            void shouldThrowExceptionWhenLoginFieldIsInvalid(String fieldName, String invalidValue) {
+                // Arrange
+                LoginRequestDto request = new LoginRequestDto(
+                        fieldName.equals("email") ? invalidValue : EMAIL,
+                        fieldName.equals("password") ? invalidValue : PASSWORD
+                );
+
+                doThrow(new IllegalArgumentException("Field cannot be null or blank"))
+                        .when(validationUtils).validateRequired(any());
+
+                // Act & Assert
+                assertThrows(IllegalArgumentException.class, () -> authService.login(request));
+
+                verify(userRepository, never()).findByEmail(anyString());
+                verify(passwordEncoder, never()).matches(anyString(), anyString());
+            }
+
+            private static Stream<Arguments> invalidLoginFieldsProvider() {
+                return Stream.of(
+                        Arguments.of("email", null),
+                        Arguments.of("email", ""),
+                        Arguments.of("email", "   "),
+                        Arguments.of("email", "\t"),
+                        Arguments.of("password", null),
+                        Arguments.of("password", ""),
+                        Arguments.of("password", "   "),
+                        Arguments.of("password", "\t")
+                );
+            }
         }
 
-        @Test
-        @DisplayName("Should throw exception when password is wrong")
-        void shouldThrowExceptionWhenPasswordIsWrong() {
-            // Arrange
-            LoginRequestDto request = new LoginRequestDto(EMAIL, "wrong");
+        // ===== EXCEPTION TESTS =====
 
-            User user = User.builder()
-                    .id(ID)
-                    .email(EMAIL)
-                    .passwordHash(HASHED)
-                    .userRole(UserRole.CUSTOMER)
-                    .store(null)
-                    .build();
+        @Nested
+        @DisplayName("Exception Tests")
+        class ExceptionTests {
 
-            doNothing().when(validationUtils).validateRequired(any());
-            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
-            when(passwordEncoder.matches("wrong", HASHED)).thenReturn(false);
+            @Test
+            @DisplayName("Should throw exception when user not found")
+            void shouldThrowExceptionWhenUserNotFound() {
+                // Arrange
+                LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
 
-            // Act & Assert
-            assertThatThrownBy(() -> authService.login(request))
-                    .isInstanceOf(InvalidCredentialsException.class);
+                mockValidationPass();
+                when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+                // Act & Assert
+                assertThatThrownBy(() -> authService.login(request))
+                        .isInstanceOf(UserNotFoundException.class);
+
+                verify(passwordEncoder, never()).matches(anyString(), anyString());
+            }
+
+            @Test
+            @DisplayName("Should throw exception when password is wrong")
+            void shouldThrowExceptionWhenPasswordIsWrong() {
+                // Arrange
+                LoginRequestDto request = new LoginRequestDto(EMAIL, "wrong");
+                User user = createUser("CUSTOMER");
+
+                mockValidationPass();
+                when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+                when(passwordEncoder.matches("wrong", HASHED)).thenReturn(false);
+
+                // Act & Assert
+                assertThatThrownBy(() -> authService.login(request))
+                        .isInstanceOf(InvalidCredentialsException.class);
+            }
         }
+    }
 
-        @ParameterizedTest
-        @MethodSource("invalidLoginFieldsProvider")
-        @DisplayName("Should throw exception when login fields are null, empty, or blank")
-        void shouldThrowExceptionWhenLoginFieldIsInvalid(String fieldName, String invalidValue) {
-            // Arrange
-            LoginRequestDto request = new LoginRequestDto(
-                    fieldName.equals("email") ? invalidValue : EMAIL,
-                    fieldName.equals("password") ? invalidValue : PASSWORD
-            );
+    // ============================================
+    // HELPER METHODS
+    // ============================================
 
-            doThrow(new IllegalArgumentException("Field cannot be null or blank"))
-                    .when(validationUtils).validateRequired(any());
+    private User createUser(String role) {
+        return User.builder()
+                .id(ID)
+                .name(NAME)
+                .email(EMAIL)
+                .passwordHash(HASHED)
+                .userRole(UserRole.valueOf(role))
+                .store(null)
+                .build();
+    }
 
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () -> authService.login(request));
+    private void mockValidationPass() {
+        doNothing().when(validationUtils).validateRequired(any());
+        doNothing().when(validationUtils).validateEmailFormat(any());
+    }
 
-            verify(userRepository, never()).findByEmail(anyString());
-            verify(passwordEncoder, never()).matches(anyString(), anyString());
-        }
+    private void assertResponse(UserResponseDto response, String expectedRole) {
+        assertThat(response.id()).isEqualTo(ID);
+        assertThat(response.name()).isEqualTo(NAME);
+        assertThat(response.email()).isEqualTo(EMAIL);
+        assertThat(response.role()).isEqualTo(expectedRole);
+    }
 
-        private static Stream<Arguments> invalidLoginFieldsProvider() {
-            return Stream.of(
-                    Arguments.of("email", null),
-                    Arguments.of("email", ""),
-                    Arguments.of("email", "   "),
-                    Arguments.of("email", "\t"),
-                    Arguments.of("password", null),
-                    Arguments.of("password", ""),
-                    Arguments.of("password", "   "),
-                    Arguments.of("password", "\t")
-            );
-        }
+    private void verifyNoInteractionsWithRepository() {
+        verify(userRepository, never()).save(any(User.class));
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).existsByEmail(anyString());
     }
 }
