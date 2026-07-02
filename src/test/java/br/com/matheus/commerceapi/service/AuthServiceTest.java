@@ -243,8 +243,7 @@ class AuthServiceTest {
                 // Arrange
                 LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
                 User user = createUser("CUSTOMER");
-
-                mockValidationPass();
+                
                 when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
                 when(passwordEncoder.matches(PASSWORD, HASHED)).thenReturn(true);
                 when(jwtService.generateToken(EMAIL, "CUSTOMER")).thenReturn(TOKEN);
@@ -309,7 +308,6 @@ class AuthServiceTest {
                 // Arrange
                 LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
 
-                mockValidationPass();
                 when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
 
                 // Act & Assert
@@ -326,7 +324,6 @@ class AuthServiceTest {
                 LoginRequestDto request = new LoginRequestDto(EMAIL, "wrong");
                 User user = createUser("CUSTOMER");
 
-                mockValidationPass();
                 when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
                 when(passwordEncoder.matches("wrong", HASHED)).thenReturn(false);
 
