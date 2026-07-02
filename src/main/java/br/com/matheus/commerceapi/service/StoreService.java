@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -31,14 +32,15 @@ public class StoreService {
 
     public StoreResponseDto createStore(CreateStoreRequestDto request, Long userId) {
 
+        Map<String, String> fields = new HashMap<>();
+        fields.put("Name", request.name());
+        fields.put("Email", request.email());
+
+        validationUtils.validateRequired(fields);
+
         User user = validateAndGetUser(userId);
 
         validateExistingStore(user);
-
-        validationUtils.validateRequired(Map.of(
-                "Name", request.name(),
-                "Email", request.email()
-        ));
 
         String email = validateAndTrimEmail(request.email());
 
@@ -68,9 +70,10 @@ public class StoreService {
 
     public StoreResponseDto updateStore(Long storeId, UpdateStoreRequestDto request){
 
-        validationUtils.validateRequired(Map.of(
-                "Name", request.name()
-        ));
+        Map<String, String> fields = new HashMap<>();
+        fields.put("Name", request.name());
+
+        validationUtils.validateRequired(fields);
 
         Store store = findStoreById(storeId);
 
