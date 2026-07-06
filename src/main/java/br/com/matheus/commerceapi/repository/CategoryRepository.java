@@ -6,9 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
+    Optional<Category> getCategoryById(Long id);
     boolean existsByName(String name);
     Page<Category> findAll(Pageable pageable);
-    Page<Category> findByDisplayNameContaining(String name, Pageable pageable);
+    boolean existsByNameAndIdNot(String name, Long CategoryId);
 }
