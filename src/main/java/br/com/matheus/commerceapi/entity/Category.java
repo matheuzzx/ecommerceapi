@@ -39,4 +39,12 @@ public class Category {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    public void deactivate(){
+        this.active = false;
+    }
+
+    public void activate(){
+        this.active = true;
+    }
 }

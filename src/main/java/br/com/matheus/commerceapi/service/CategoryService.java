@@ -83,6 +83,18 @@ public class CategoryService {
         return CategoryResponseDto.fromEntity(updatedCategory);
     }
 
+    public void deactivateCategory(Long categoryId){
+        Category category = getCategory(categoryId);
+        category.deactivate();
+        categoryRepository.save(category);
+    }
+
+    public void activateCategory(Long categoryId){
+        Category category = getCategory(categoryId);
+        category.activate();
+        categoryRepository.save(category);
+    }
+
     private Category getCategory(Long categoryId) {
         return categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category not found, id: " + categoryId));
