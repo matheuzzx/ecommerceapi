@@ -1,8 +1,8 @@
 package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
+import br.com.matheus.commerceapi.dto.request.category.UpdateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.response.Category.CategoryResponseDto;
-import br.com.matheus.commerceapi.entity.Category;
 import br.com.matheus.commerceapi.service.CategoryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("category")
@@ -40,6 +38,13 @@ public class CategoryController {
 
         Page<CategoryResponseDto> categories = categoryService.getCategories(pageable);
         return ResponseEntity.ok(categories);
+    }
+
+    @PutMapping("/{categoryId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CategoryResponseDto> updateCategory(@RequestBody UpdateCategoryRequestDto request, @PathVariable Long categoryId){
+        CategoryResponseDto category = categoryService.updateCategory(categoryId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(category);
     }
 
 }
