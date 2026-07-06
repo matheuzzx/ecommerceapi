@@ -7,8 +7,13 @@ import br.com.matheus.commerceapi.exception.NameAlreadyExistsException;
 import br.com.matheus.commerceapi.repository.CategoryRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -41,6 +46,23 @@ public class CategoryService {
 
         return CategoryResponseDto.fromEntity(category);
 
+    }
+
+    public Page<CategoryResponseDto> getCategories(Pageable pageable) {
+        Page<Category> categories = categoryRepository.findAll(pageable);
+
+        return categories.map(CategoryResponseDto::fromEntity);
+    }
+
+    public Page<CategoryResponseDto> searchCategories(String searchTerm, Pageable pageable) {
+        if (searchTerm == null || searchTerm.isEmpty()) {
+            return getCategories(pageable);
+        }
+
+        Page<Category> categories = categoryRepository
+                .findByDisplayNameContaining(searchTerm, pageable);
+
+        return categories.map(CategoryResponseDto::fromEntity);
     }
 
     private void validateUniqueName(String uniqueName){
