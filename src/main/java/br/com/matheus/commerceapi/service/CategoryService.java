@@ -35,6 +35,7 @@ public class CategoryService {
                 .name(uniqueName)
                 .displayName(request.displayName())
                 .description(request.description())
+                .active(true)
                 .build();
 
         return categoryRepository.save(category);
