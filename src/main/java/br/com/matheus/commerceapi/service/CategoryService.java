@@ -1,14 +1,13 @@
 package br.com.matheus.commerceapi.service;
 
 import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
+import br.com.matheus.commerceapi.dto.response.Category.CategoryResponseDto;
 import br.com.matheus.commerceapi.entity.Category;
 import br.com.matheus.commerceapi.exception.NameAlreadyExistsException;
 import br.com.matheus.commerceapi.repository.CategoryRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import javax.naming.NameAlreadyBoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +18,7 @@ public class CategoryService {
     private final ValidationUtils validationUtils;
     private final CategoryRepository categoryRepository;
 
-    public Category createCategory(CreateCategoryRequestDto request) {
+    public CategoryResponseDto createCategory(CreateCategoryRequestDto request) {
 
         Map<String, String> fields = new HashMap<>();
         fields.put("displayName", request.displayName());
@@ -38,7 +37,10 @@ public class CategoryService {
                 .active(true)
                 .build();
 
-        return categoryRepository.save(category);
+        Category savedCategory = categoryRepository.save(category);
+
+        return CategoryResponseDto.fromEntity(category);
+
     }
 
     private void validateUniqueName(String uniqueName){

@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
+import br.com.matheus.commerceapi.dto.response.Category.CategoryResponseDto;
 import br.com.matheus.commerceapi.entity.Category;
 import br.com.matheus.commerceapi.service.CategoryService;
 import org.springframework.http.HttpStatus;
@@ -23,8 +24,8 @@ public class CategoryController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Category> createCategory(@RequestBody CreateCategoryRequestDto request){
-        Category category = categoryService.createCategory(request);
+    public ResponseEntity<CategoryResponseDto> createCategory(@RequestBody CreateCategoryRequestDto request){
+        CategoryResponseDto category = categoryService.createCategory(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(category);
     }
