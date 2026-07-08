@@ -95,6 +95,11 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
+    public void deleteCategory(Long categoryId){
+        Category category = getCategory(categoryId);
+        categoryRepository.delete(category);
+    }
+
     private Category getCategory(Long categoryId) {
         return categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category not found, id: " + categoryId));

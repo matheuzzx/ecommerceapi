@@ -47,17 +47,24 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(category);
     }
 
-    @PutMapping("{categoryId}/deactivate")
+    @PutMapping("/{categoryId}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deactivateCategory(@PathVariable Long categoryId){
         categoryService.deactivateCategory(categoryId);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("{categoryId}/activate")
+    @PutMapping("/{categoryId}/activate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void>activateCategory(@PathVariable Long categoryId){
         categoryService.activateCategory(categoryId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{categoryId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void>deleteCategory(@PathVariable Long categoryId){
+        categoryService.deleteCategory(categoryId);
         return ResponseEntity.noContent().build();
     }
 
