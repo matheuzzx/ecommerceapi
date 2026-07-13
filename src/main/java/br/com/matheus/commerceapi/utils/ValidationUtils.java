@@ -10,7 +10,7 @@ import java.util.Map;
 @Slf4j
 @Component
 public class ValidationUtils {
-    public void validateRequired(Map<String, String> fields) {
+    public void validateRequiredString(Map<String, String> fields) {
         String emptyField = fields.entrySet().stream()
                 .filter(entry -> !StringUtils.hasText(entry.getValue()))
                 .map(Map.Entry::getKey)

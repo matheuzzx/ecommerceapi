@@ -33,7 +33,7 @@ public class CategoryService {
         fields.put("displayName", request.displayName());
         fields.put("description", request.description());
 
-        validationUtils.validateRequired(fields);
+        validationUtils.validateRequiredString(fields);
 
         String uniqueName = adaptName(request.displayName());
         validateUniqueName(uniqueName);
