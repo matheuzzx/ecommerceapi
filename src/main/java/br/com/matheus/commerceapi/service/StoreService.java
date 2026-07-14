@@ -15,12 +15,14 @@ import br.com.matheus.commerceapi.repository.UserRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -63,12 +65,12 @@ public class StoreService {
         return StoreResponseDto.fromEntity(savedStore);
     }
 
-    public StoreResponseDto getStore(Long storeId){
+    public StoreResponseDto getStore(Long storeId) {
         Store store = findStoreById(storeId);
         return StoreResponseDto.fromEntity(store);
     }
 
-    public StoreResponseDto updateStore(Long storeId, UpdateStoreRequestDto request){
+    public StoreResponseDto updateStore(Long storeId, UpdateStoreRequestDto request) {
 
         Map<String, String> fields = new HashMap<>();
         fields.put("Name", request.name());
@@ -84,46 +86,60 @@ public class StoreService {
         return StoreResponseDto.fromEntity(savedStore);
     }
 
-    public void deleteStore(Long storeId){
+    public void deleteStore(Long storeId) {
         Store store = findStoreById(storeId);
         User storeOwner = store.getStoreOwner();
         storeOwner.setStore(null);
         storeRepository.delete(store);
+
+        log.info("Store deleted: {} (ID: {})", store.getName(), storeId);
     }
 
-    private void validateExistingStore(User user){
-        if(storeRepository.existsByStoreOwner(user)) throw new StoreAlreadyExists();
+    private void validateExistingStore(User user) {
+        if (storeRepository.existsByStoreOwner(user)) {
+            log.warn("User already owns a store: {}", user.getEmail());
+            throw new StoreAlreadyExists();
+        }
     }
 
-    private String validateAndTrimEmail(String email){
+    private String validateAndTrimEmail(String email) {
         String trimmedEmail = email.trim();
         validationUtils.validateEmailFormat(trimmedEmail);
         return trimmedEmail;
     }
 
-    private void validateExistingSlug(String slug){
+    private void validateExistingSlug(String slug) {
         if (storeRepository.existsBySlug(slug)) {
+            log.warn("Slug already exists: {}", slug);
             throw new SlugAlreadyExistsException(slug);
         }
     }
 
-    private String toSlug(String name){
+    private String toSlug(String name) {
         return name.replace(" ", "_");
     }
 
-    private User validateAndGetUser(Long userId){
+    private User validateAndGetUser(Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+                .orElseThrow(() -> {
+                    log.warn("User not found for store creation: ID {}", userId);
+                    return new UsernameNotFoundException("User Not Found");
+                });
 
         if (user.getUserRole() != UserRole.STOREOWNER) {
+            log.warn("Invalid role attempt: User {} is {}, expected STOREOWNER",
+                    user.getEmail(), user.getUserRole());
             throw new InvalidRoleException("Invalid role, Role Accepted is STOREOWNER");
         }
 
         return user;
     }
 
-    private Store findStoreById(Long id){
-        return storeRepository.findById(id).orElseThrow(StoreNotFoundException::new);
+    private Store findStoreById(Long id) {
+        return storeRepository.findById(id).orElseThrow(() -> {
+            log.warn("Store not found: ID {}", id);
+            return new StoreNotFoundException();
+        });
     }
 }
