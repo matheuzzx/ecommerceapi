@@ -27,8 +27,6 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     public CategoryResponseDto createCategory(CreateCategoryRequestDto request) {
-        log.info("📝 Creating category: {}", request.displayName());
-
         Map<String, String> fields = new HashMap<>();
         fields.put("displayName", request.displayName());
         fields.put("description", request.description());
@@ -46,7 +44,6 @@ public class CategoryService {
                 .build();
 
         Category savedCategory = categoryRepository.save(category);
-        log.info("✅ Category created: {} (ID: {})", savedCategory.getName(), savedCategory.getId());
 
         return CategoryResponseDto.fromEntity(savedCategory);
     }
@@ -57,8 +54,6 @@ public class CategoryService {
     }
 
     public CategoryResponseDto updateCategory(Long categoryId, UpdateCategoryRequestDto request) {
-        log.info("📝 Updating category: {}", categoryId);
-
         Category category = getCategory(categoryId);
 
         if (request.displayName() != null && !request.displayName().isEmpty()) {
@@ -78,41 +73,51 @@ public class CategoryService {
         }
 
         Category updatedCategory = categoryRepository.save(category);
-        log.info("✅ Category updated: {} (ID: {})", updatedCategory.getName(), updatedCategory.getId());
 
         return CategoryResponseDto.fromEntity(updatedCategory);
     }
 
-    public void deactivateCategory(Long categoryId){
+    public void deactivateCategory(Long categoryId) {
         Category category = getCategory(categoryId);
         category.deactivate();
         categoryRepository.save(category);
+
+        log.info("Category deactivated: {} (ID: {})", category.getName(), categoryId);
     }
 
-    public void activateCategory(Long categoryId){
+    public void activateCategory(Long categoryId) {
         Category category = getCategory(categoryId);
         category.activate();
         categoryRepository.save(category);
+
+        log.info("Category activated: {} (ID: {})", category.getName(), categoryId); //
     }
 
-    public void deleteCategory(Long categoryId){
+    public void deleteCategory(Long categoryId) {
         Category category = getCategory(categoryId);
         categoryRepository.delete(category);
+
+        log.info("Category deleted: {} (ID: {})", category.getName(), categoryId); //
     }
 
     private Category getCategory(Long categoryId) {
         return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new NotFoundException("Category not found, id: " + categoryId));
+                .orElseThrow(() -> {
+                    log.warn("Category not found: ID {}", categoryId);
+                    return new NotFoundException("Category not found, id: " + categoryId);
+                });
     }
 
     private void validateUniqueName(String uniqueName) {
         if (categoryRepository.existsByName(uniqueName)) {
+            log.warn("Category name already exists: {}", uniqueName);
             throw new NameAlreadyExistsException(uniqueName);
         }
     }
 
     private void validateUniqueName(String uniqueName, Long excludeId) {
         if (categoryRepository.existsByNameAndIdNot(uniqueName, excludeId)) {
+            log.warn("Category name already exists (update): {} - excluding ID {}", uniqueName, excludeId);
             throw new NameAlreadyExistsException(uniqueName);
         }
     }
