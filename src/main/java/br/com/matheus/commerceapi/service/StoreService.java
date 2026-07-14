@@ -36,7 +36,7 @@ public class StoreService {
         fields.put("Name", request.name());
         fields.put("Email", request.email());
 
-        validationUtils.validateRequired(fields);
+        validationUtils.validateRequiredString(fields);
 
         User user = validateAndGetUser(userId);
 
@@ -73,7 +73,7 @@ public class StoreService {
         Map<String, String> fields = new HashMap<>();
         fields.put("Name", request.name());
 
-        validationUtils.validateRequired(fields);
+        validationUtils.validateRequiredString(fields);
 
         Store store = findStoreById(storeId);
 

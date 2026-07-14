@@ -174,7 +174,7 @@ public class StoreServiceTest {
                 User user = createValidStoreOwner();
 
                 mockUserValidation(user);
-                doNothing().when(validationUtils).validateRequired(any());
+                doNothing().when(validationUtils).validateRequiredString(any());
                 doNothing().when(validationUtils).validateEmailFormat(trimmedEmail);
                 when(storeRepository.existsBySlug(SLUG)).thenReturn(false);
                 when(storeRepository.save(any(Store.class))).thenReturn(createStore(user));
@@ -205,7 +205,7 @@ public class StoreServiceTest {
                 CreateStoreRequestDto request = new CreateStoreRequestDto(invalidName, EMAIL);
 
                 doThrow(new IllegalArgumentException("Name cannot be null or blank"))
-                        .when(validationUtils).validateRequired(any());
+                        .when(validationUtils).validateRequiredString(any());
 
                 // Act & Assert
                 assertThrows(IllegalArgumentException.class,
@@ -223,7 +223,7 @@ public class StoreServiceTest {
                 CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, invalidEmail);
 
                 doThrow(new IllegalArgumentException("Email cannot be null or blank"))
-                        .when(validationUtils).validateRequired(any());
+                        .when(validationUtils).validateRequiredString(any());
 
                 // Act & Assert
                 assertThrows(IllegalArgumentException.class,
@@ -242,7 +242,7 @@ public class StoreServiceTest {
 
                 when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
                 when(storeRepository.existsByStoreOwner(user)).thenReturn(false);
-                doNothing().when(validationUtils).validateRequired(any());
+                doNothing().when(validationUtils).validateRequiredString(any());
                 doThrow(new IllegalArgumentException("Email is not valid"))
                         .when(validationUtils).validateEmailFormat(invalidEmail.trim());
 
@@ -322,7 +322,7 @@ public class StoreServiceTest {
 
                 when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
                 when(storeRepository.existsByStoreOwner(user)).thenReturn(false);
-                doNothing().when(validationUtils).validateRequired(any());
+                doNothing().when(validationUtils).validateRequiredString(any());
                 doNothing().when(validationUtils).validateEmailFormat(EMAIL.trim());
                 when(storeRepository.existsBySlug(SLUG)).thenReturn(true);
 
@@ -393,7 +393,7 @@ public class StoreServiceTest {
             Store updatedStore = createUpdatedStore(user);
 
             when(storeRepository.findById(STORE_ID)).thenReturn(Optional.of(store));
-            doNothing().when(validationUtils).validateRequired(any());
+            doNothing().when(validationUtils).validateRequiredString(any());
             when(storeRepository.save(any(Store.class))).thenReturn(updatedStore);
 
             // Act
@@ -420,7 +420,7 @@ public class StoreServiceTest {
             UpdateStoreRequestDto request = new UpdateStoreRequestDto(invalidName);
 
             doThrow(new IllegalArgumentException("Name cannot be null or blank"))
-                    .when(validationUtils).validateRequired(any());
+                    .when(validationUtils).validateRequiredString(any());
 
             // Act & Assert
             assertThrows(IllegalArgumentException.class,
@@ -555,7 +555,7 @@ public class StoreServiceTest {
     }
 
     private void mockValidationPass() {
-        doNothing().when(validationUtils).validateRequired(any());
+        doNothing().when(validationUtils).validateRequiredString(any());
         doNothing().when(validationUtils).validateEmailFormat(any());
     }
 

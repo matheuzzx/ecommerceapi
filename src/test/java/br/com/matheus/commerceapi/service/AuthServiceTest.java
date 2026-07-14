@@ -131,7 +131,7 @@ class AuthServiceTest {
                 String invalidEmail = "invalid_email";
                 RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, invalidEmail, PASSWORD, "CUSTOMER");
 
-                doNothing().when(validationUtils).validateRequired(any());
+                doNothing().when(validationUtils).validateRequiredString(any());
                 doThrow(new IllegalArgumentException("Email is not valid"))
                         .when(validationUtils).validateEmailFormat(invalidEmail);
 
@@ -156,7 +156,7 @@ class AuthServiceTest {
                 );
 
                 doThrow(new IllegalArgumentException("Field cannot be null or blank"))
-                        .when(validationUtils).validateRequired(any());
+                        .when(validationUtils).validateRequiredString(any());
 
                 // Act & Assert
                 assertThrows(IllegalArgumentException.class, () -> authService.register(request));
@@ -273,7 +273,7 @@ class AuthServiceTest {
                 );
 
                 doThrow(new IllegalArgumentException("Field cannot be null or blank"))
-                        .when(validationUtils).validateRequired(any());
+                        .when(validationUtils).validateRequiredString(any());
 
                 // Act & Assert
                 assertThrows(IllegalArgumentException.class, () -> authService.login(request));
@@ -350,7 +350,7 @@ class AuthServiceTest {
     }
 
     private void mockValidationPass() {
-        doNothing().when(validationUtils).validateRequired(any());
+        doNothing().when(validationUtils).validateRequiredString(any());
         doNothing().when(validationUtils).validateEmailFormat(any());
     }
 

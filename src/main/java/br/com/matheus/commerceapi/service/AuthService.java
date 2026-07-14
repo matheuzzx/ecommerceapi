@@ -37,7 +37,7 @@ public class AuthService {
         fields.put("Password", request.password());
         fields.put("Role", request.role());
 
-        validationUtils.validateRequired(fields);
+        validationUtils.validateRequiredString(fields);
 
         String validatedEmail = validateAndTrimEmail(request.email());
         UserRole role = validateAndGetRole(request.role());
@@ -75,7 +75,7 @@ public class AuthService {
         fields.put("Email", request.email());
         fields.put("Password", request.password());
 
-        validationUtils.validateRequired(fields);
+        validationUtils.validateRequiredString(fields);
 
         String trimmedEmail = request.email().trim();
 
