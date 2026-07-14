@@ -29,8 +29,6 @@ public class AuthService {
 
     public UserResponseDto register(RegisterUserRequestDto request) {
 
-        log.info("🚀 Starting user registration for email: {}", request.email());
-
         Map<String, String> fields = new HashMap<>();
         fields.put("Name", request.name());
         fields.put("Email", request.email());
@@ -42,34 +40,24 @@ public class AuthService {
         String validatedEmail = validateAndTrimEmail(request.email());
         UserRole role = validateAndGetRole(request.role());
 
-        log.debug("Email validated: {}, Role: {}", validatedEmail, role);
-
-        String hashedPassword = passwordEncoder.encode(request.password());
-
         User user = User.builder()
                 .name(request.name())
                 .email(validatedEmail)
-                .passwordHash(hashedPassword)
+                .passwordHash(passwordEncoder.encode(request.password()))
                 .userRole(role)
                 .build();
 
         User savedUser = userRepository.save(user);
 
-        UserResponseDto userResponseDto = new UserResponseDto(
+        return new UserResponseDto(
                 savedUser.getId(),
                 savedUser.getName(),
                 savedUser.getEmail(),
                 savedUser.getUserRole().toString()
         );
-
-        log.info("✅ User registered successfully: {} (ID: {})", validatedEmail, savedUser.getId());
-
-        return userResponseDto;
     }
 
     public TokenResponseDto login(LoginRequestDto request) {
-
-        log.info("🔐 Login attempt for email: {}", request.email());
 
         Map<String, String> fields = new HashMap<>();
         fields.put("Email", request.email());
@@ -79,24 +67,17 @@ public class AuthService {
 
         String trimmedEmail = request.email().trim();
 
-        log.debug("Searching user by email: {}", trimmedEmail);
-
-        var user = validateAndGetUser(trimmedEmail);
-
-        log.debug("Validating password for user: {}", trimmedEmail);
-
+        User user = validateAndGetUser(trimmedEmail);
         validatePassword(request.password(), user.getPasswordHash());
 
         String token = jwtService.generateToken(trimmedEmail, user.getUserRole().toString());
-
-        log.debug("Validating password for user: {}", trimmedEmail);
 
         return new TokenResponseDto(token);
     }
 
     private void validatePassword(String password, String userPassword) {
         if (!passwordEncoder.matches(password, userPassword)) {
-            log.warn("❌ Invalid password attempt");
+            log.warn("Invalid password attempt");
             throw new InvalidCredentialsException();
         }
     }
@@ -104,25 +85,29 @@ public class AuthService {
     private User validateAndGetUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    log.warn("❌ User not found: {}", email);
+                    log.warn("User not found: {}", email);
                     return new UserNotFoundException();
                 });
     }
 
     private UserRole validateAndGetRole(String roleStr) {
+        try {
+            UserRole role = UserRole.valueOf(roleStr.toUpperCase());
 
-        UserRole role = UserRole.valueOf(roleStr.toUpperCase());
+            if (role != UserRole.CUSTOMER && role != UserRole.STOREOWNER) {
+                log.warn("Invalid role attempted: {}", roleStr);
+                throw new InvalidRoleException("Invalid role. Allowed: CUSTOMER, STOREOWNER");
+            }
 
-        if (role != UserRole.CUSTOMER && role != UserRole.STOREOWNER) {
-            log.warn("⚠️ Invalid role attempted: {}", roleStr);
+            return role;
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid role format: {}", roleStr);
             throw new InvalidRoleException("Invalid role. Allowed: CUSTOMER, STOREOWNER");
         }
-
-        return role;
     }
 
     private String validateAndTrimEmail(String email) {
-        String trimmedEmail = returnTrimmedEmail(email);
+        String trimmedEmail = email.trim();
         validationUtils.validateEmailFormat(trimmedEmail);
         validateUniqueEmail(trimmedEmail);
         return trimmedEmail;
@@ -130,12 +115,8 @@ public class AuthService {
 
     private void validateUniqueEmail(String email) {
         if (userRepository.existsByEmail(email)) {
-            log.warn("⚠️ Email already exists: {}", email);
+            log.warn("Email already exists: {}", email);
             throw new EmailAlreadyExistsException(email);
         }
-    }
-
-    private String returnTrimmedEmail(String email) {
-        return email.trim();
     }
 }
