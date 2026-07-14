@@ -16,12 +16,14 @@ public class StoreSecurityService {
     private final UserRepository userRepository;
 
     public boolean isStoreOwner(Long storeId, Long userId) {
-        Store store = storeRepository.findById(storeId).orElse(null);
-        return store != null && store.getStoreOwner().getId().equals(userId);
+        return storeRepository.findById(storeId)
+                .map(store -> store.getStoreOwner().getId().equals(userId))
+                .orElse(false);
     }
 
     public boolean canCreateStore(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        return user != null && user.getUserRole() == UserRole.STOREOWNER;
+        return userRepository.findById(userId)
+                .map(user -> user.getUserRole() == UserRole.STOREOWNER)
+                .orElse(false);
     }
 }
