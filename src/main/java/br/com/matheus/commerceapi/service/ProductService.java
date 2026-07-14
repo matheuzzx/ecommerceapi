@@ -30,7 +30,7 @@ public class ProductService {
 
     public Product createProduct(CreateProductRequestDto request) {
 
-        Category category = categoryRepository.getCategoryById(request.categoryId())
+        Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         Store store = storeRepository.findById(request.storeId())

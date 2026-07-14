@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    Optional<Category> getCategoryById(Long id);
+    Optional<Category> findById(Long id);
     boolean existsByName(String name);
     Page<Category> findAll(Pageable pageable);
     boolean existsByNameAndIdNot(String name, Long CategoryId);
