@@ -59,4 +59,13 @@ public class StockService {
         return stockRepository.save(stock);
     }
 
+    @Transactional
+    public Stock reserveStock(Long productId, Integer amount) {
+        Stock stock = stockRepository.findByProductId(productId)
+                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
+
+        stock.reserve(amount);
+
+        return stockRepository.save(stock);
+    }
 }
