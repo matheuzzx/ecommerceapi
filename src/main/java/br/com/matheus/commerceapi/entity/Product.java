@@ -25,9 +25,6 @@ public class Product {
     @Column(nullable = false, length = 200)
     private String name;
 
-    @Column(unique = true, length = 50)
-    private String sku;
-
     @Column(length = 2000)
     private String description;
 
