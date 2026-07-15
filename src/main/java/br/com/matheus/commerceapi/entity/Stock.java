@@ -47,22 +47,22 @@ public class Stock {
     }
 
     public void addStock(Integer amount) {
+        checkValidAmount(amount);
+
         this.quantity += amount;
         this.lastUpdated = LocalDateTime.now();
     }
 
     public void removeStock(Integer amount) {
-        if (amount > getAvailable()) {
-            throw new RuntimeException("Estoque insuficiente. Disponível: " + getAvailable());
-        }
+        checkAmount(amount);
+
         this.quantity -= amount;
         this.lastUpdated = LocalDateTime.now();
     }
 
     public void reserve(Integer amount) {
-        if (amount > getAvailable()) {
-            throw new RuntimeException("Estoque insuficiente para reserva. Disponível: " + getAvailable());
-        }
+        checkAmount(amount);
+
         this.reserved += amount;
         this.lastUpdated = LocalDateTime.now();
     }
@@ -76,6 +76,15 @@ public class Stock {
     public void cancelReservation() {
         this.reserved = 0;
         this.lastUpdated = LocalDateTime.now();
+    }
+
+    private void checkAmount(Integer amount){
+        checkValidAmount(amount);
+        if (amount > getAvailable()) throw new IllegalArgumentException("Insufficient stock. Available: " + getAvailable());
+    }
+
+    private void checkValidAmount(Integer amount){
+        if(amount == null || amount <= 0) throw new IllegalArgumentException("Amount must be positive and not null");
     }
 
 }
