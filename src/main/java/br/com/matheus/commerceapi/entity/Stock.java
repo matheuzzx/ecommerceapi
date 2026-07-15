@@ -47,44 +47,63 @@ public class Stock {
     }
 
     public void addStock(Integer amount) {
-        checkValidAmount(amount);
-
+        validatePositiveAmount(amount);
         this.quantity += amount;
-        this.lastUpdated = LocalDateTime.now();
+        updateLastUpdated();
     }
 
     public void removeStock(Integer amount) {
-        checkAmount(amount);
-
+        validateAmountWithStock(amount);
         this.quantity -= amount;
-        this.lastUpdated = LocalDateTime.now();
+        updateLastUpdated();
     }
 
     public void reserve(Integer amount) {
-        checkAmount(amount);
-
+        validateAmountWithStock(amount);
         this.reserved += amount;
-        this.lastUpdated = LocalDateTime.now();
+        updateLastUpdated();
     }
 
     public void confirmReservation() {
+        if (this.reserved == 0) {
+            throw new IllegalStateException("No reservation to confirm for product: " + product.getId());
+        }
+
+        if (this.reserved > this.quantity) {
+            throw new IllegalStateException("Reserved amount exceeds physical stock. Reserved: " +
+                    this.reserved + ", Available: " + this.quantity);
+        }
+
         this.quantity -= this.reserved;
         this.reserved = 0;
-        this.lastUpdated = LocalDateTime.now();
+        updateLastUpdated();
     }
 
     public void cancelReservation() {
+        if (this.reserved == 0) {
+            throw new IllegalStateException("No reservation to cancel for product: " + product.getId());
+        }
+
         this.reserved = 0;
+        updateLastUpdated();
+    }
+
+    private void validatePositiveAmount(Integer amount) {
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("Amount must be positive and not null");
+        }
+    }
+
+    private void validateAmountWithStock(Integer amount) {
+        validatePositiveAmount(amount);
+        if (amount > getAvailable()) {
+            throw new IllegalArgumentException(
+                    String.format("Insufficient stock. Requested: %d, Available: %d", amount, getAvailable())
+            );
+        }
+    }
+
+    private void updateLastUpdated() {
         this.lastUpdated = LocalDateTime.now();
     }
-
-    private void checkAmount(Integer amount){
-        checkValidAmount(amount);
-        if (amount > getAvailable()) throw new IllegalArgumentException("Insufficient stock. Available: " + getAvailable());
-    }
-
-    private void checkValidAmount(Integer amount){
-        if(amount == null || amount <= 0) throw new IllegalArgumentException("Amount must be positive and not null");
-    }
-
 }
