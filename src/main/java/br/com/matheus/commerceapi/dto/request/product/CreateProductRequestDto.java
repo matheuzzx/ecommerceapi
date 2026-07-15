@@ -5,8 +5,6 @@ import java.math.BigDecimal;
 public record CreateProductRequestDto(
         String name,
 
-        String sku,
-
         String description,
 
         BigDecimal price,
