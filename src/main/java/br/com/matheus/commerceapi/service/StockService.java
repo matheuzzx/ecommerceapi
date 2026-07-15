@@ -68,4 +68,14 @@ public class StockService {
 
         return stockRepository.save(stock);
     }
+
+    @Transactional
+    public Stock confirmReservation(Long productId) {
+        Stock stock = stockRepository.findByProductId(productId)
+                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
+
+        stock.confirmReservation();
+
+        return stockRepository.save(stock);
+    }
 }
