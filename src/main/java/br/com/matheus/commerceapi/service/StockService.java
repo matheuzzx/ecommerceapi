@@ -39,4 +39,14 @@ public class StockService {
                 .orElseThrow(() -> new NotFoundException("Stock Not Found"));
     }
 
+    @Transactional
+    public Stock addStock(Long productId, Integer amount){
+        Stock stock = stockRepository.findByProductId(productId)
+                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
+
+        stock.addStock(amount);
+
+        return stockRepository.save(stock);
+    }
+
 }
