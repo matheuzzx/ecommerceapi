@@ -41,8 +41,7 @@ public class StockService {
 
     @Transactional
     public Stock addStock(Long productId, Integer amount){
-        Stock stock = stockRepository.findByProductId(productId)
-                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
+        Stock stock = getStockByProductId(productId);
 
         stock.addStock(amount);
 
@@ -51,8 +50,7 @@ public class StockService {
 
     @Transactional
     public Stock removeStock(Long productId, Integer amount) {
-        Stock stock = stockRepository.findByProductId(productId)
-                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
+        Stock stock = getStockByProductId(productId);
 
         stock.removeStock(amount);
 
@@ -61,8 +59,7 @@ public class StockService {
 
     @Transactional
     public Stock reserveStock(Long productId, Integer amount) {
-        Stock stock = stockRepository.findByProductId(productId)
-                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
+        Stock stock = getStockByProductId(productId);
 
         stock.reserve(amount);
 
@@ -71,8 +68,7 @@ public class StockService {
 
     @Transactional
     public Stock confirmReservation(Long productId) {
-        Stock stock = stockRepository.findByProductId(productId)
-                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
+        Stock stock = getStockByProductId(productId);
 
         stock.confirmReservation();
 
@@ -81,8 +77,7 @@ public class StockService {
 
     @Transactional
     public Stock cancelReservation(Long productId) {
-        Stock stock = stockRepository.findByProductId(productId)
-                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
+        Stock stock = getStockByProductId(productId);
 
         stock.cancelReservation();
 
