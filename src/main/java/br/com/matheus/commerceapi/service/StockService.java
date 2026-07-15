@@ -28,12 +28,6 @@ public class StockService {
     }
 
     @Transactional(readOnly = true)
-    public Stock getStockByProduct(Product product) {
-        return stockRepository.findByProduct(product)
-                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
-    }
-
-    @Transactional(readOnly = true)
     public Stock getStockByProductId(Long productId) {
         return stockRepository.findByProductId(productId)
                 .orElseThrow(() -> new NotFoundException("Stock Not Found"));
