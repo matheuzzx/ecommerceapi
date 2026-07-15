@@ -10,4 +10,5 @@ import java.util.Optional;
 @Repository
 public interface StockRepository extends JpaRepository<Stock, Long> {
     Optional<Stock> findByProduct(Product product);
+    Optional<Stock> findByProductId(Long productId);
 }
