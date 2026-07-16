@@ -6,10 +6,7 @@ import br.com.matheus.commerceapi.dto.response.store.StoreResponseDto;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
-import br.com.matheus.commerceapi.exception.InvalidRoleException;
-import br.com.matheus.commerceapi.exception.SlugAlreadyExistsException;
-import br.com.matheus.commerceapi.exception.StoreAlreadyExists;
-import br.com.matheus.commerceapi.exception.StoreNotFoundException;
+import br.com.matheus.commerceapi.exception.*;
 import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
@@ -105,6 +102,7 @@ public class StoreService {
     private String validateAndTrimEmail(String email) {
         String trimmedEmail = email.trim();
         validationUtils.validateEmailFormat(trimmedEmail);
+        validateUniqueEmail(trimmedEmail);
         return trimmedEmail;
     }
 
@@ -141,5 +139,12 @@ public class StoreService {
             log.warn("Store not found: ID {}", id);
             return new StoreNotFoundException();
         });
+    }
+
+    private void validateUniqueEmail(String email) {
+        if (storeRepository.existsByEmail(email)) {
+            log.warn("Email already exists: {}", email);
+            throw new EmailAlreadyExistsException(email);
+        }
     }
 }
