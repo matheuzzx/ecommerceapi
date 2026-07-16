@@ -7,6 +7,7 @@ import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.exception.AlreadyExistsException;
+import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.exception.StoreNotFoundException;
 import br.com.matheus.commerceapi.repository.CategoryRepository;
 import br.com.matheus.commerceapi.repository.ProductRepository;
@@ -19,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,6 +65,17 @@ public class ProductService {
         productRepository.save(savedProduct);
 
         return ProductResponseDto.fromEntity(savedProduct);
+    }
+
+    public List<ProductResponseDto> findProductsByUserId(Long userId) {
+        Store store = storeRepository.findByStoreOwnerId(userId)
+                .orElseThrow(() -> new NotFoundException("Store not found for user: " + userId));
+
+        List<Product> products = productRepository.findByStore(store);
+
+        return products.stream()
+                .map(ProductResponseDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     private void validateRequest(CreateProductRequestDto request) {

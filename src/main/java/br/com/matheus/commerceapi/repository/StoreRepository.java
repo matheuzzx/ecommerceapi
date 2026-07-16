@@ -12,4 +12,5 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     boolean existsBySlug(String slug);
     Optional<Store> findById(Long id);
     boolean existsByStoreOwner(User user);
+    Optional<Store> findByStoreOwnerId(Long userId);
 }
