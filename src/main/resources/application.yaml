@@ -19,9 +19,9 @@ jwt:
   secret: dGhpcy1pcy1hLXNlY3JldC1rZXktd2l0aC0zMi1ieXRlcy1mb3Itand0LWNvcnJlY3QteWVz
   expiration: 86400000
 
-  app:
-    admin:
-      auto-create: true
-      name: Administrador
-      email: admin@admin.com
-      password: Admin123!
+app:
+  admin:
+    auto-create: true
+    name: Administrador
+    email: admin@admin.com
+    password: Admin123!
