@@ -55,8 +55,9 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
 
         Stock stock = createInitialStock(savedProduct);
-        stock.addStock(request.quantity());
         savedProduct.setStock(stock);
+
+        stockService.addStock(product.getId(), request.quantity());
 
         productRepository.save(savedProduct);
 
