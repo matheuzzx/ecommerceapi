@@ -9,8 +9,6 @@ public record CreateProductRequestDto(
 
         BigDecimal price,
 
-        boolean active,
-
         Long categoryId,
 
         Long storeId,
