@@ -2,7 +2,7 @@ package br.com.matheus.commerceapi.service;
 
 import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.request.category.UpdateCategoryRequestDto;
-import br.com.matheus.commerceapi.dto.response.Category.CategoryResponseDto;
+import br.com.matheus.commerceapi.dto.response.category.CategoryResponseDto;
 import br.com.matheus.commerceapi.entity.Category;
 import br.com.matheus.commerceapi.exception.NameAlreadyExistsException;
 import br.com.matheus.commerceapi.exception.NotFoundException;

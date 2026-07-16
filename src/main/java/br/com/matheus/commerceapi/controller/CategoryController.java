@@ -2,7 +2,7 @@ package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.request.category.UpdateCategoryRequestDto;
-import br.com.matheus.commerceapi.dto.response.Category.CategoryResponseDto;
+import br.com.matheus.commerceapi.dto.response.category.CategoryResponseDto;
 import br.com.matheus.commerceapi.service.CategoryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

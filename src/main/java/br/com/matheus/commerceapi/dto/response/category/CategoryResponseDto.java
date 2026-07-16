@@ -1,4 +1,4 @@
-package br.com.matheus.commerceapi.dto.response.Category;
+package br.com.matheus.commerceapi.dto.response.category;
 
 import br.com.matheus.commerceapi.entity.Category;
 
