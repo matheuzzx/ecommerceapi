@@ -54,7 +54,8 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        Stock stock = createInitialStock(savedProduct, request.quantity());
+        Stock stock = createInitialStock(savedProduct);
+        stock.addStock(request.quantity());
         savedProduct.setStock(stock);
 
         productRepository.save(savedProduct);
@@ -103,7 +104,7 @@ public class ProductService {
                 .orElseThrow(StoreNotFoundException::new);
     }
 
-    private Stock createInitialStock(Product product, Integer amount) {
-        return stockService.createStockForProduct(product, amount);
+    private Stock createInitialStock(Product product) {
+        return stockService.createStockForProduct(product);
     }
 }

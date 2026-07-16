@@ -16,10 +16,10 @@ public class StockService {
 
     private final StockRepository stockRepository;
 
-    public Stock createStockForProduct(Product product, Integer quantity) {
+    public Stock createStockForProduct(Product product) {
         Stock stock = Stock.builder()
                 .product(product)
-                .quantity(quantity != null ? quantity : 0)
+                .quantity(0)
                 .reserved(0)
                 .lastUpdated(LocalDateTime.now())
                 .build();
