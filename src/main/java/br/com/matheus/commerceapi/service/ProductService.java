@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.service;
 
 import br.com.matheus.commerceapi.dto.request.product.CreateProductRequestDto;
+import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
 import br.com.matheus.commerceapi.entity.Category;
 import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
@@ -32,7 +33,7 @@ public class ProductService {
     private final StoreRepository storeRepository;
 
     @Transactional
-    public Product createProduct(CreateProductRequestDto request) {
+    public ProductResponseDto createProduct(CreateProductRequestDto request) {
 
         validateRequest(request);
 
@@ -56,7 +57,9 @@ public class ProductService {
         Stock stock = createInitialStock(savedProduct, request.quantity());
         savedProduct.setStock(stock);
 
-        return savedProduct;
+        productRepository.save(savedProduct);
+
+        return ProductResponseDto.fromEntity(savedProduct);
     }
 
     private void validateRequest(CreateProductRequestDto request) {
