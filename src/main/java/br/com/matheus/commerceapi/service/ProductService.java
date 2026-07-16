@@ -15,6 +15,8 @@ import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,15 +69,15 @@ public class ProductService {
         return ProductResponseDto.fromEntity(savedProduct);
     }
 
-    public List<ProductResponseDto> findProductsByUserId(Long userId) {
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDto> findProductsByUserId(Long userId, Pageable pageable) {
         Store store = storeRepository.findByStoreOwnerId(userId)
                 .orElseThrow(() -> new NotFoundException("Store not found for user: " + userId));
 
-        List<Product> products = productRepository.findByStore(store);
+        Page<Product> products = productRepository.findByStore(store, pageable);
 
-        return products.stream()
-                .map(ProductResponseDto::fromEntity)
-                .collect(Collectors.toList());
+        // 3. Converte para DTO
+        return products.map(ProductResponseDto::fromEntity);
     }
 
     private void validateRequest(CreateProductRequestDto request) {
