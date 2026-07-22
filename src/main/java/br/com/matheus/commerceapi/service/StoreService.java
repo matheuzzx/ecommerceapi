@@ -10,11 +10,11 @@ import br.com.matheus.commerceapi.exception.*;
 import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -134,11 +134,24 @@ public class StoreService {
         return user;
     }
 
-    private Store findStoreById(Long id) {
-        return storeRepository.findById(id).orElseThrow(() -> {
-            log.warn("Store not found: ID {}", id);
+    public Store findStoreById(Long storeId) {
+        return storeRepository.findById(storeId).orElseThrow(() -> {
+            log.warn("Store not found: ID {}", storeId);
             return new StoreNotFoundException();
         });
+    }
+
+    public Store findStoreByStoreOwner(Long storeOwnerId) {
+        return storeRepository.findByStoreOwnerId(storeOwnerId)
+                .orElseThrow(() -> new NotFoundException("Store not found for user: " + storeOwnerId));
+    }
+
+    public Store findActiveStoreById(Long storeId) {
+        Store store = findStoreById(storeId);
+
+        if(!store.isActive()) throw new IllegalStateException("Store is not active: " + storeId);
+
+        return store;
     }
 
     private void validateUniqueEmail(String email) {

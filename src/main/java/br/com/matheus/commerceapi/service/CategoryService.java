@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CategoryService {
 
     private final ValidationUtils validationUtils;
@@ -54,7 +56,7 @@ public class CategoryService {
     }
 
     public CategoryResponseDto updateCategory(Long categoryId, UpdateCategoryRequestDto request) {
-        Category category = getCategory(categoryId);
+        Category category = findCategoryById(categoryId);
 
         if (request.displayName() != null && !request.displayName().isEmpty()) {
             String newDisplayName = request.displayName().trim();
@@ -78,7 +80,7 @@ public class CategoryService {
     }
 
     public void deactivateCategory(Long categoryId) {
-        Category category = getCategory(categoryId);
+        Category category = findCategoryById(categoryId);
         category.deactivate();
         categoryRepository.save(category);
 
@@ -86,7 +88,7 @@ public class CategoryService {
     }
 
     public void activateCategory(Long categoryId) {
-        Category category = getCategory(categoryId);
+        Category category = findCategoryById(categoryId);
         category.activate();
         categoryRepository.save(category);
 
@@ -94,18 +96,26 @@ public class CategoryService {
     }
 
     public void deleteCategory(Long categoryId) {
-        Category category = getCategory(categoryId);
+        Category category = findCategoryById(categoryId);
         categoryRepository.delete(category);
 
         log.info("Category deleted: {} (ID: {})", category.getName(), categoryId); //
     }
 
-    private Category getCategory(Long categoryId) {
+    public Category findCategoryById(Long categoryId) {
         return categoryRepository.findById(categoryId)
                 .orElseThrow(() -> {
                     log.warn("Category not found: ID {}", categoryId);
                     return new NotFoundException("Category not found, id: " + categoryId);
                 });
+    }
+
+    public Category findActiveCategoryById(Long categoryId) {
+        Category category = findCategoryById(categoryId);
+
+        if(!category.isActive()) throw new IllegalStateException("Category is not active: " + categoryId);
+
+        return category;
     }
 
     private void validateUniqueName(String uniqueName) {

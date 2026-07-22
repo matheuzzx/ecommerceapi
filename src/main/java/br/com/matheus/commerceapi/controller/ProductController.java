@@ -38,8 +38,7 @@ public class ProductController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        Page<ProductResponseDto> products = productService.findProductsByUserId(
-                userDetails.getId(), pageable);
+        Page<ProductResponseDto> products = productService.findProductsByStoreOwner(userDetails.getId(), pageable);
 
         return ResponseEntity.ok(products);
     }

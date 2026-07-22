@@ -7,11 +7,7 @@ import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.exception.AlreadyExistsException;
-import br.com.matheus.commerceapi.exception.NotFoundException;
-import br.com.matheus.commerceapi.exception.StoreNotFoundException;
-import br.com.matheus.commerceapi.repository.CategoryRepository;
 import br.com.matheus.commerceapi.repository.ProductRepository;
-import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,30 +18,28 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final StockService stockService;
     private final ValidationUtils validationUtils;
-    private final CategoryRepository categoryRepository;
-    private final StoreRepository storeRepository;
+    private final CategoryService categoryService;
+    private final StoreService storeService;
 
     @Transactional
     public ProductResponseDto createProduct(CreateProductRequestDto request) {
 
         validateRequest(request);
 
-        Category category = findCategoryById(request.categoryId());
-        Store store = findStoreById(request.storeId());
+        Category category = categoryService.findActiveCategoryById(request.categoryId());
+        Store store = storeService.findActiveStoreById(request.storeId());
 
-        validateCategoryAndStore(category, store);
         validateProductUniqueness(request);
 
         Product product = Product.builder()
@@ -59,7 +53,7 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        Stock stock = createInitialStock(savedProduct);
+        Stock stock = stockService.createStockForProduct(savedProduct);
         savedProduct.setStock(stock);
 
         stockService.addStock(product.getId(), request.quantity());
@@ -69,14 +63,9 @@ public class ProductService {
         return ProductResponseDto.fromEntity(savedProduct);
     }
 
-    @Transactional(readOnly = true)
-    public Page<ProductResponseDto> findProductsByUserId(Long userId, Pageable pageable) {
-        Store store = storeRepository.findByStoreOwnerId(userId)
-                .orElseThrow(() -> new NotFoundException("Store not found for user: " + userId));
-
+    public Page<ProductResponseDto> findProductsByStoreOwner(Long userId, Pageable pageable) {
+        Store store = storeService.findStoreByStoreOwner(userId);
         Page<Product> products = productRepository.findByStore(store, pageable);
-
-        // 3. Converte para DTO
         return products.map(ProductResponseDto::fromEntity);
     }
 
@@ -89,16 +78,6 @@ public class ProductService {
         validatePrice(request.price());
     }
 
-    private void validateCategoryAndStore(Category category, Store store) {
-        if (!category.isActive()) {
-            throw new IllegalStateException("Category is not active");
-        }
-
-        if (!store.isActive()) {
-            throw new IllegalStateException("Store is not active");
-        }
-    }
-
     private void validateProductUniqueness(CreateProductRequestDto request) {
         if (productRepository.existsByNameAndStoreId(request.name(), request.storeId())) {
             throw new AlreadyExistsException("Product '" + request.name() + "' already exists in this store");
@@ -109,19 +88,5 @@ public class ProductService {
         if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Price must be greater than or equal to zero");
         }
-    }
-
-    private Category findCategoryById(Long categoryId) {
-        return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-    }
-
-    private Store findStoreById(Long storeId) {
-        return storeRepository.findById(storeId)
-                .orElseThrow(StoreNotFoundException::new);
-    }
-
-    private Stock createInitialStock(Product product) {
-        return stockService.createStockForProduct(product);
     }
 }

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class StockService {
 
     private final StockRepository stockRepository;
@@ -27,13 +28,11 @@ public class StockService {
         return stockRepository.save(stock);
     }
 
-    @Transactional(readOnly = true)
     public Stock getStockByProductId(Long productId) {
         return stockRepository.findByProductId(productId)
                 .orElseThrow(() -> new NotFoundException("Stock Not Found"));
     }
 
-    @Transactional
     public Stock addStock(Long productId, Integer amount){
         Stock stock = getStockByProductId(productId);
 
@@ -42,7 +41,6 @@ public class StockService {
         return stockRepository.save(stock);
     }
 
-    @Transactional
     public Stock removeStock(Long productId, Integer amount) {
         Stock stock = getStockByProductId(productId);
 
@@ -51,7 +49,6 @@ public class StockService {
         return stockRepository.save(stock);
     }
 
-    @Transactional
     public Stock reserveStock(Long productId, Integer amount) {
         Stock stock = getStockByProductId(productId);
 
@@ -60,7 +57,6 @@ public class StockService {
         return stockRepository.save(stock);
     }
 
-    @Transactional
     public Stock confirmReservation(Long productId) {
         Stock stock = getStockByProductId(productId);
 
@@ -69,7 +65,6 @@ public class StockService {
         return stockRepository.save(stock);
     }
 
-    @Transactional
     public Stock cancelReservation(Long productId) {
         Stock stock = getStockByProductId(productId);
 
