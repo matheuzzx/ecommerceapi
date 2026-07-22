@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.product.CreateProductRequestDto;
+import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.ProductService;
@@ -41,5 +42,14 @@ public class ProductController {
         Page<ProductResponseDto> products = productService.findProductsByStoreOwner(userDetails.getId(), pageable);
 
         return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/{productId}/details")
+    @PreAuthorize("hasRole('STOREOWNER') and @storeSecurityService.isProductOwner(#productId, #userDetails.id)")
+    public ResponseEntity<ProductDetailsResponseDto> getProductDetailsById(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long productId) {
+
+        return ResponseEntity.ok(productService.getProductDetailsById(productId));
     }
 }

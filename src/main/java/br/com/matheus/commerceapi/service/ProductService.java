@@ -1,12 +1,14 @@
 package br.com.matheus.commerceapi.service;
 
 import br.com.matheus.commerceapi.dto.request.product.CreateProductRequestDto;
+import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
 import br.com.matheus.commerceapi.entity.Category;
 import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.exception.AlreadyExistsException;
+import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.ProductRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -67,6 +70,16 @@ public class ProductService {
         Store store = storeService.findStoreByStoreOwner(userId);
         Page<Product> products = productRepository.findByStore(store, pageable);
         return products.map(ProductResponseDto::fromEntity);
+    }
+
+    public ProductDetailsResponseDto getProductDetailsById(Long productId) {
+        Product product = findProductById(productId);
+        return ProductDetailsResponseDto.fromEntity(product);
+    }
+
+    private Product findProductById(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Product not found with id: " + productId));
     }
 
     private void validateRequest(CreateProductRequestDto request) {
