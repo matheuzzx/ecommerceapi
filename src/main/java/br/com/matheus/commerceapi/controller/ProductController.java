@@ -66,4 +66,15 @@ public class ProductController {
 
         return ResponseEntity.status(HttpStatus.OK).body(product);
     }
+
+    @DeleteMapping("/{productId}")
+    @PreAuthorize("hasRole('STOREOWNER') and @storeSecurityService.isProductOwner(#productId, #userDetails.id)")
+    public ResponseEntity<Void> deleteProduct(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long productId) {
+
+        productService.deleteProduct(productId);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
