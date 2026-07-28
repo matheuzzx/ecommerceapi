@@ -3,6 +3,7 @@ package br.com.matheus.commerceapi.service;
 import br.com.matheus.commerceapi.dto.request.order.CreateOrderRequestDto;
 import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
 import br.com.matheus.commerceapi.entity.*;
+import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,16 @@ public class OrderService {
         log.info("Order created: ID {} for customer {} at store {}", savedOrder.getId(), customerId, store.getId());
 
         return OrderResponseDto.fromEntity(savedOrder);
+    }
+
+    public OrderResponseDto getOrder(Long orderId) {
+        Order order = findOrderById(orderId);
+
+        return OrderResponseDto.fromEntity(order);
+    }
+
+    private Order findOrderById(Long orderId) {
+        return orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order not found with id: " + orderId));
     }
 
     private OrderItem buildOrderItem(Store store, CreateOrderRequestDto.OrderItemRequest itemRequest) {
