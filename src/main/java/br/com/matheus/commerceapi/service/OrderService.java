@@ -3,6 +3,7 @@ package br.com.matheus.commerceapi.service;
 import br.com.matheus.commerceapi.dto.request.order.CreateOrderRequestDto;
 import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
 import br.com.matheus.commerceapi.entity.*;
+import br.com.matheus.commerceapi.enums.OrderStatus;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -63,11 +64,81 @@ public class OrderService {
     }
 
     @Transactional
+    public OrderResponseDto confirmOrder(Long orderId) {
+        Order order = findOrderById(orderId);
+
+        if (order.getStatus() != OrderStatus.CREATED) {
+            throw new IllegalStateException("Order must be CREATED to be confirmed");
+        }
+
+        order.nextStatus();
+        confirmStockReservations(order);
+
+        Order savedOrder = orderRepository.save(order);
+
+        log.info("Order confirmed: ID {}", orderId);
+
+        return OrderResponseDto.fromEntity(savedOrder);
+    }
+
+    @Transactional
+    public OrderResponseDto shipOrder(Long orderId) {
+        Order order = findOrderById(orderId);
+
+        if (order.getStatus() != OrderStatus.PAID) {
+            throw new IllegalStateException("Order must be PAID to be shipped");
+        }
+
+        order.nextStatus();
+        Order savedOrder = orderRepository.save(order);
+
+        log.info("Order shipped: ID {}", orderId);
+
+        return OrderResponseDto.fromEntity(savedOrder);
+    }
+
+    @Transactional
+    public OrderResponseDto deliverOrder(Long orderId) {
+        Order order = findOrderById(orderId);
+
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new IllegalStateException("Order must be SHIPPED to be delivered");
+        }
+
+        order.nextStatus();
+        Order savedOrder = orderRepository.save(order);
+
+        log.info("Order delivered: ID {}", orderId);
+
+        return OrderResponseDto.fromEntity(savedOrder);
+    }
+
+    @Transactional
     public OrderResponseDto cancelOrder(Long orderId) {
         Order order = findOrderById(orderId);
+
+        if (!order.canCancel()) {
+            throw new IllegalStateException("Order cannot be canceled in status: " + order.getStatus());
+        }
+
         order.cancel();
-        orderRepository.save(order);
-        return OrderResponseDto.fromEntity(order);
+        cancelStockReservations(order);
+
+        Order savedOrder = orderRepository.save(order);
+
+        log.info("Order canceled: ID {}", orderId);
+
+        return OrderResponseDto.fromEntity(savedOrder);
+    }
+
+    private void confirmStockReservations(Order order) {
+        order.getItems().forEach(item ->
+                stockService.confirmReservation(item.getProduct().getId()));
+    }
+
+    private void cancelStockReservations(Order order) {
+        order.getItems().forEach(item ->
+                stockService.cancelReservation(item.getProduct().getId()));
     }
 
     private Order findOrderById(Long orderId) {
