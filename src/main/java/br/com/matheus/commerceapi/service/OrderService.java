@@ -62,6 +62,13 @@ public class OrderService {
         return OrderResponseDto.fromEntity(order);
     }
 
+    public OrderResponseDto cancelOrder(Long orderId) {
+        Order order = findOrderById(orderId);
+        order.cancel();
+        orderRepository.save(order);
+        return OrderResponseDto.fromEntity(order);
+    }
+
     private Order findOrderById(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order not found with id: " + orderId));
     }
