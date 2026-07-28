@@ -29,7 +29,7 @@ public class ProductController {
     }
 
     @PostMapping
-    @PreAuthorize("@storeSecurityService.isStoreOwner(#request.storeId(), #authentication.principal.id)")
+    @PreAuthorize("@securityService.isStoreOwner(#request.storeId(), #authentication.principal.id)")
     public ResponseEntity<ProductResponseDto> createProduct(@RequestBody @Valid CreateProductRequestDto request, Authentication authentication) {
         ProductResponseDto product = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
@@ -47,7 +47,7 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}/details")
-    @PreAuthorize("hasRole('STOREOWNER') and @storeSecurityService.isProductOwner(#productId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
     public ResponseEntity<ProductDetailsResponseDto> getProductDetailsById(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long productId) {
@@ -56,7 +56,7 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}")
-    @PreAuthorize("hasRole('STOREOWNER') and @storeSecurityService.isProductOwner(#productId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
     public ResponseEntity<ProductDetailsResponseDto> updateProduct(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long productId,
@@ -68,7 +68,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    @PreAuthorize("hasRole('STOREOWNER') and @storeSecurityService.isProductOwner(#productId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
     public ResponseEntity<Void> deleteProduct(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long productId) {

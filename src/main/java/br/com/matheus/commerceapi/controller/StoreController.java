@@ -31,7 +31,7 @@ public class StoreController {
     }
 
     @GetMapping("/{storeId}")
-    @PreAuthorize("@storeSecurityService.isStoreOwner(#storeId, #authentication.principal.id) or hasRole('ADMIN')")
+    @PreAuthorize("@securityService.isStoreOwner(#storeId, #authentication.principal.id) or hasRole('ADMIN')")
     public ResponseEntity<StoreResponseDto> getStore(
             @PathVariable Long storeId,
             Authentication authentication) {
@@ -41,7 +41,7 @@ public class StoreController {
     }
 
     @PutMapping("/{storeId}")
-    @PreAuthorize("@storeSecurityService.isStoreOwner(#storeId, #authentication.principal.id)")
+    @PreAuthorize("@securityService.isStoreOwner(#storeId, #authentication.principal.id)")
     public ResponseEntity<StoreResponseDto> updateStore(
             @PathVariable Long storeId,
             @RequestBody @Valid UpdateStoreRequestDto request,
@@ -52,7 +52,7 @@ public class StoreController {
     }
 
     @DeleteMapping("/{storeId}")
-    @PreAuthorize("@storeSecurityService.isStoreOwner(#storeId, #authentication.principal.id) or hasRole('ADMIN')")
+    @PreAuthorize("@securityService.isStoreOwner(#storeId, #authentication.principal.id) or hasRole('ADMIN')")
     public ResponseEntity<Void> deleteStore(
             @PathVariable Long storeId,
             Authentication authentication) {
