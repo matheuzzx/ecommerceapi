@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.service;
 
 import br.com.matheus.commerceapi.dto.request.product.CreateProductRequestDto;
+import br.com.matheus.commerceapi.dto.request.product.UpdateProductRequestDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
 import br.com.matheus.commerceapi.entity.Category;
@@ -38,7 +39,7 @@ public class ProductService {
     @Transactional
     public ProductResponseDto createProduct(CreateProductRequestDto request) {
 
-        validateRequest(request);
+        validateCreateProductRequest(request);
 
         Category category = categoryService.findActiveCategoryById(request.categoryId());
         Store store = storeService.findActiveStoreById(request.storeId());
@@ -77,12 +78,36 @@ public class ProductService {
         return ProductDetailsResponseDto.fromEntity(product);
     }
 
+    public ProductDetailsResponseDto updateProductById(Long productId, UpdateProductRequestDto request){
+
+        Map<String, String> fields = new HashMap<>();
+        fields.put("Name", request.name());
+        fields.put("Description", request.description());
+
+        validationUtils.validateRequiredString(fields);
+
+        validatePrice(request.price());
+
+        Product product = findProductById(productId);
+
+        Category category = categoryService.findActiveCategoryById(request.categoryId());
+
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setPrice(request.price());
+        product.setCategory(category);
+
+        productRepository.save(product);
+
+        return ProductDetailsResponseDto.fromEntity(product);
+    }
+
     private Product findProductById(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException("Product not found with id: " + productId));
     }
 
-    private void validateRequest(CreateProductRequestDto request) {
+    private void validateCreateProductRequest(CreateProductRequestDto request) {
         Map<String, String> fields = new HashMap<>();
         fields.put("Name", request.name());
         fields.put("Description", request.description());
