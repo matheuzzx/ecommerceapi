@@ -62,6 +62,7 @@ public class OrderService {
         return OrderResponseDto.fromEntity(order);
     }
 
+    @Transactional
     public OrderResponseDto cancelOrder(Long orderId) {
         Order order = findOrderById(orderId);
         order.cancel();
