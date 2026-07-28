@@ -4,9 +4,9 @@ import br.com.matheus.commerceapi.dto.request.product.CreateProductRequestDto;
 import br.com.matheus.commerceapi.dto.request.product.UpdateProductRequestDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
-import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,7 +30,7 @@ public class ProductController {
 
     @PostMapping
     @PreAuthorize("@storeSecurityService.isStoreOwner(#request.storeId(), #authentication.principal.id)")
-    public ResponseEntity<ProductResponseDto> createProduct(@RequestBody CreateProductRequestDto request, Authentication authentication) {
+    public ResponseEntity<ProductResponseDto> createProduct(@RequestBody @Valid CreateProductRequestDto request, Authentication authentication) {
         ProductResponseDto product = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
@@ -60,7 +60,7 @@ public class ProductController {
     public ResponseEntity<ProductDetailsResponseDto> updateProduct(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long productId,
-            @RequestBody UpdateProductRequestDto  request) {
+            @RequestBody @Valid UpdateProductRequestDto  request) {
 
         ProductDetailsResponseDto product = productService.updateProduct(productId, request);
 

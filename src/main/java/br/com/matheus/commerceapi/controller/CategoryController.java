@@ -4,6 +4,7 @@ import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.request.category.UpdateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.response.category.CategoryResponseDto;
 import br.com.matheus.commerceapi.service.CategoryService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,7 +26,7 @@ public class CategoryController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoryResponseDto> createCategory(@RequestBody CreateCategoryRequestDto request){
+    public ResponseEntity<CategoryResponseDto> createCategory(@RequestBody @Valid CreateCategoryRequestDto request){
         CategoryResponseDto category = categoryService.createCategory(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(category);
@@ -42,7 +43,7 @@ public class CategoryController {
 
     @PutMapping("/{categoryId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoryResponseDto> updateCategory(@RequestBody UpdateCategoryRequestDto request, @PathVariable Long categoryId){
+    public ResponseEntity<CategoryResponseDto> updateCategory(@RequestBody @Valid UpdateCategoryRequestDto request, @PathVariable Long categoryId){
         CategoryResponseDto category = categoryService.updateCategory(categoryId, request);
         return ResponseEntity.status(HttpStatus.OK).body(category);
     }
