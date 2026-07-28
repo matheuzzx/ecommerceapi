@@ -78,24 +78,25 @@ public class ProductService {
         return ProductDetailsResponseDto.fromEntity(product);
     }
 
-    public ProductDetailsResponseDto updateProductById(Long productId, UpdateProductRequestDto request){
-
-        Map<String, String> fields = new HashMap<>();
-        fields.put("Name", request.name());
-        fields.put("Description", request.description());
-
-        validationUtils.validateRequiredString(fields);
-
-        validatePrice(request.price());
-
+    public ProductDetailsResponseDto updateProduct(Long productId, UpdateProductRequestDto request) {
         Product product = findProductById(productId);
 
-        Category category = categoryService.findActiveCategoryById(request.categoryId());
-
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setPrice(request.price());
-        product.setCategory(category);
+        if (request.name() != null) {
+            validationUtils.validateRequiredString(Map.of("Name", request.name()));
+            product.setName(request.name());
+        }
+        if (request.description() != null) {
+            validationUtils.validateRequiredString(Map.of("Description", request.description()));
+            product.setDescription(request.description());
+        }
+        if (request.price() != null) {
+            validatePrice(request.price());
+            product.setPrice(request.price());
+        }
+        if (request.categoryId() != null) {
+            Category category = categoryService.findActiveCategoryById(request.categoryId());
+            product.setCategory(category);
+        }
 
         productRepository.save(product);
 
