@@ -1,8 +1,10 @@
 package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.product.CreateProductRequestDto;
+import br.com.matheus.commerceapi.dto.request.product.UpdateProductRequestDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
+import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.ProductService;
 import org.springframework.data.domain.Page;
@@ -51,5 +53,17 @@ public class ProductController {
             @PathVariable Long productId) {
 
         return ResponseEntity.ok(productService.getProductDetailsById(productId));
+    }
+
+    @PutMapping("/{productId}")
+    @PreAuthorize("hasRole('STOREOWNER') and @storeSecurityService.isProductOwner(#productId, #userDetails.id)")
+    public ResponseEntity<ProductDetailsResponseDto> updateProduct(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long productId,
+            @RequestBody UpdateProductRequestDto  request) {
+
+        ProductDetailsResponseDto product = productService.updateProduct(productId, request);
+
+        return ResponseEntity.status(HttpStatus.OK).body(product);
     }
 }
