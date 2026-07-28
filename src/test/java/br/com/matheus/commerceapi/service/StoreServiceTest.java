@@ -11,7 +11,6 @@ import br.com.matheus.commerceapi.exception.SlugAlreadyExistsException;
 import br.com.matheus.commerceapi.exception.StoreAlreadyExists;
 import br.com.matheus.commerceapi.exception.StoreNotFoundException;
 import br.com.matheus.commerceapi.repository.StoreRepository;
-import br.com.matheus.commerceapi.repository.UserRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,7 +23,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import br.com.matheus.commerceapi.exception.UserNotFoundException;
 
 import java.util.Optional;
 
@@ -39,7 +38,7 @@ import static org.mockito.Mockito.*;
 public class StoreServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Mock
     private StoreRepository storeRepository;
@@ -240,7 +239,7 @@ public class StoreServiceTest {
                 CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, invalidEmail);
                 User user = createValidStoreOwner();
 
-                when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+                when(userService.findUserById(USER_ID)).thenReturn(user);
                 when(storeRepository.existsByStoreOwner(user)).thenReturn(false);
                 doNothing().when(validationUtils).validateRequiredString(any());
                 doThrow(new IllegalArgumentException("Email is not valid"))
@@ -267,11 +266,11 @@ public class StoreServiceTest {
                 // Arrange
                 CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, EMAIL);
 
-                when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+                when(userService.findUserById(USER_ID)).thenThrow(new UserNotFoundException());
 
                 // Act & Assert
                 assertThatThrownBy(() -> storeService.createStore(request, USER_ID))
-                        .isInstanceOf(UsernameNotFoundException.class)
+                        .isInstanceOf(UserNotFoundException.class)
                         .hasMessage("User Not Found");
 
                 verify(storeRepository, never()).save(any(Store.class));
@@ -285,7 +284,7 @@ public class StoreServiceTest {
                 CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, EMAIL);
                 User user = createUserWithRole(UserRole.CUSTOMER);
 
-                when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+                when(userService.findUserById(USER_ID)).thenReturn(user);
 
                 // Act & Assert
                 assertThatThrownBy(() -> storeService.createStore(request, USER_ID))
@@ -303,7 +302,7 @@ public class StoreServiceTest {
                 CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, EMAIL);
                 User user = createValidStoreOwner();
 
-                when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+                when(userService.findUserById(USER_ID)).thenReturn(user);
                 when(storeRepository.existsByStoreOwner(user)).thenReturn(true);
 
                 // Act & Assert
@@ -320,7 +319,7 @@ public class StoreServiceTest {
                 CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, EMAIL);
                 User user = createValidStoreOwner();
 
-                when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+                when(userService.findUserById(USER_ID)).thenReturn(user);
                 when(storeRepository.existsByStoreOwner(user)).thenReturn(false);
                 doNothing().when(validationUtils).validateRequiredString(any());
                 doNothing().when(validationUtils).validateEmailFormat(EMAIL.trim());
@@ -550,7 +549,7 @@ public class StoreServiceTest {
     }
 
     private void mockUserValidation(User user) {
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(userService.findUserById(USER_ID)).thenReturn(user);
         when(storeRepository.existsByStoreOwner(user)).thenReturn(false);
     }
 
@@ -579,7 +578,7 @@ public class StoreServiceTest {
     }
 
     private void verifyNoInteractionsWithRepository() {
-        verify(userRepository, never()).findById(any());
+        verify(userService, never()).findUserById(any());
         verify(storeRepository, never()).save(any(Store.class));
         verify(storeRepository, never()).existsByStoreOwner(any());
     }

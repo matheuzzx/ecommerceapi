@@ -10,7 +10,6 @@ import br.com.matheus.commerceapi.exception.EmailAlreadyExistsException;
 import br.com.matheus.commerceapi.exception.InvalidCredentialsException;
 import br.com.matheus.commerceapi.exception.InvalidRoleException;
 import br.com.matheus.commerceapi.exception.UserNotFoundException;
-import br.com.matheus.commerceapi.repository.UserRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,7 +25,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +39,7 @@ import static org.mockito.Mockito.*;
 class AuthServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -86,8 +84,8 @@ class AuthServiceTest {
 
                 mockValidationPass();
                 when(passwordEncoder.encode(PASSWORD)).thenReturn(HASHED);
-                when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
-                when(userRepository.save(any(User.class))).thenReturn(savedUser);
+                doNothing().when(userService).validateUniqueEmail(EMAIL);
+                when(userService.saveUser(any(User.class))).thenReturn(savedUser);
 
                 // Act
                 UserResponseDto response = authService.register(request);
@@ -105,15 +103,15 @@ class AuthServiceTest {
 
                 mockValidationPass();
                 when(passwordEncoder.encode(PASSWORD)).thenReturn(HASHED);
-                when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
-                when(userRepository.save(any(User.class))).thenReturn(savedUser);
+                doNothing().when(userService).validateUniqueEmail(EMAIL);
+                when(userService.saveUser(any(User.class))).thenReturn(savedUser);
 
                 // Act
                 authService.register(request);
 
                 // Assert
                 ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-                verify(userRepository).save(userCaptor.capture());
+                verify(userService).saveUser(userCaptor.capture());
                 assertThat(userCaptor.getValue().getStore()).isNull();
             }
         }
@@ -139,7 +137,7 @@ class AuthServiceTest {
                 assertThatThrownBy(() -> authService.register(request))
                         .isInstanceOf(IllegalArgumentException.class);
 
-                verify(userRepository, never()).save(any(User.class));
+                verify(userService, never()).saveUser(any(User.class));
                 verify(passwordEncoder, never()).encode(anyString());
             }
 
@@ -200,7 +198,7 @@ class AuthServiceTest {
                 assertThatThrownBy(() -> authService.register(request))
                         .isInstanceOf(InvalidRoleException.class);
 
-                verify(userRepository, never()).save(any(User.class));
+                verify(userService, never()).saveUser(any(User.class));
                 verify(passwordEncoder, never()).encode(anyString());
             }
 
@@ -211,13 +209,13 @@ class AuthServiceTest {
                 RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, EMAIL, PASSWORD, "CUSTOMER");
 
                 mockValidationPass();
-                when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
+                doThrow(new EmailAlreadyExistsException(EMAIL)).when(userService).validateUniqueEmail(EMAIL);
 
                 // Act & Assert
                 assertThatThrownBy(() -> authService.register(request))
                         .isInstanceOf(EmailAlreadyExistsException.class);
 
-                verify(userRepository, never()).save(any(User.class));
+                verify(userService, never()).saveUser(any(User.class));
                 verify(passwordEncoder, never()).encode(anyString());
             }
         }
@@ -244,7 +242,7 @@ class AuthServiceTest {
                 LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
                 User user = createUser("CUSTOMER");
                 
-                when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+                when(userService.findUserByEmail(EMAIL)).thenReturn(user);
                 when(passwordEncoder.matches(PASSWORD, HASHED)).thenReturn(true);
                 when(jwtService.generateToken(EMAIL, "CUSTOMER")).thenReturn(TOKEN);
 
@@ -278,7 +276,7 @@ class AuthServiceTest {
                 // Act & Assert
                 assertThrows(IllegalArgumentException.class, () -> authService.login(request));
 
-                verify(userRepository, never()).findByEmail(anyString());
+                verify(userService, never()).findUserByEmail(anyString());
                 verify(passwordEncoder, never()).matches(anyString(), anyString());
             }
 
@@ -308,7 +306,7 @@ class AuthServiceTest {
                 // Arrange
                 LoginRequestDto request = new LoginRequestDto(EMAIL, PASSWORD);
 
-                when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+                when(userService.findUserByEmail(EMAIL)).thenThrow(new UserNotFoundException());
 
                 // Act & Assert
                 assertThatThrownBy(() -> authService.login(request))
@@ -324,7 +322,7 @@ class AuthServiceTest {
                 LoginRequestDto request = new LoginRequestDto(EMAIL, "wrong");
                 User user = createUser("CUSTOMER");
 
-                when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+                when(userService.findUserByEmail(EMAIL)).thenReturn(user);
                 when(passwordEncoder.matches("wrong", HASHED)).thenReturn(false);
 
                 // Act & Assert
@@ -362,8 +360,8 @@ class AuthServiceTest {
     }
 
     private void verifyNoInteractionsWithRepository() {
-        verify(userRepository, never()).save(any(User.class));
+        verify(userService, never()).saveUser(any(User.class));
         verify(passwordEncoder, never()).encode(anyString());
-        verify(userRepository, never()).existsByEmail(anyString());
+        verify(userService, never()).validateUniqueEmail(anyString());
     }
 }
