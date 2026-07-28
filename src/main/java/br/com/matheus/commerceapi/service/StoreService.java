@@ -25,7 +25,7 @@ import java.util.Map;
 @Transactional
 public class StoreService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final StoreRepository storeRepository;
     private final ValidationUtils validationUtils;
 
@@ -119,11 +119,7 @@ public class StoreService {
 
     private User validateAndGetUser(Long userId) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("User not found for store creation: ID {}", userId);
-                    return new UsernameNotFoundException("User Not Found");
-                });
+        User user = userService.findUserById(userId);
 
         if (user.getUserRole() != UserRole.STOREOWNER) {
             log.warn("Invalid role attempt: User {} is {}, expected STOREOWNER",

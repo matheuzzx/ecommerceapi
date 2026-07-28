@@ -3,10 +3,7 @@ package br.com.matheus.commerceapi.service;
 import br.com.matheus.commerceapi.dto.request.order.CreateOrderRequestDto;
 import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
 import br.com.matheus.commerceapi.entity.*;
-import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.OrderRepository;
-import br.com.matheus.commerceapi.repository.ProductRepository;
-import br.com.matheus.commerceapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,15 +20,14 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final ProductService productService;
     private final StoreService storeService;
     private final StockService stockService;
 
     @Transactional
     public OrderResponseDto createOrder(Long customerId, CreateOrderRequestDto request) {
-        User customer = userRepository.findById(customerId)
-                .orElseThrow(() -> new NotFoundException("User not found with id: " + customerId));
+        User customer = userService.findUserById(customerId);
 
         Store store = storeService.findActiveStoreById(request.storeId());
 

@@ -24,7 +24,7 @@ import java.util.Map;
 @Transactional
 public class AuthService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final ValidationUtils validationUtils;
@@ -49,7 +49,7 @@ public class AuthService {
                 .userRole(role)
                 .build();
 
-        User savedUser = userRepository.save(user);
+        User savedUser = userService.saveUser(user);
 
         return new UserResponseDto(
                 savedUser.getId(),
@@ -69,7 +69,7 @@ public class AuthService {
 
         String trimmedEmail = request.email().trim();
 
-        User user = validateAndGetUser(trimmedEmail);
+        User user = userService.findUserByEmail(trimmedEmail);
         validatePassword(request.password(), user.getPasswordHash());
 
         String token = jwtService.generateToken(trimmedEmail, user.getUserRole().toString());
@@ -82,14 +82,6 @@ public class AuthService {
             log.warn("Invalid password attempt");
             throw new InvalidCredentialsException();
         }
-    }
-
-    private User validateAndGetUser(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    log.warn("User not found: {}", email);
-                    return new UserNotFoundException();
-                });
     }
 
     private UserRole validateAndGetRole(String roleStr) {
@@ -111,14 +103,7 @@ public class AuthService {
     private String validateAndTrimEmail(String email) {
         String trimmedEmail = email.trim();
         validationUtils.validateEmailFormat(trimmedEmail);
-        validateUniqueEmail(trimmedEmail);
+        userService.validateUniqueEmail(trimmedEmail);
         return trimmedEmail;
-    }
-
-    private void validateUniqueEmail(String email) {
-        if (userRepository.existsByEmail(email)) {
-            log.warn("Email already exists: {}", email);
-            throw new EmailAlreadyExistsException(email);
-        }
     }
 }
