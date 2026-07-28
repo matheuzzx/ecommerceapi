@@ -108,7 +108,7 @@ public class ProductService {
         productRepository.delete(product);
     }
 
-    private Product findProductById(Long productId) {
+    public Product findProductById(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException("Product not found with id: " + productId));
     }
