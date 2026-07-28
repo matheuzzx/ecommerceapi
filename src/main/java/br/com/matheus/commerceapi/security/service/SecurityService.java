@@ -2,19 +2,21 @@ package br.com.matheus.commerceapi.security.service;
 
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.enums.UserRole;
+import br.com.matheus.commerceapi.repository.OrderRepository;
 import br.com.matheus.commerceapi.repository.ProductRepository;
 import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component("SecurityService")
+@Component
 @RequiredArgsConstructor
 public class SecurityService {
 
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
 
     public boolean isStoreOwner(Long storeId, Long userId) {
         return storeRepository.findById(storeId)
@@ -34,6 +36,12 @@ public class SecurityService {
                     Store store = product.getStore();
                     return store.getStoreOwner().getId().equals(userId);
                 })
+                .orElse(false);
+    }
+
+    public boolean isOrderOwner(Long orderId, Long userId) {
+        return orderRepository.findById(orderId)
+                .map(order -> order.getCustomer().getId().equals(userId))
                 .orElse(false);
     }
 }

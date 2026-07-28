@@ -5,6 +5,7 @@ import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.OrderService;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +29,17 @@ public class OrderController {
             @RequestBody @Valid CreateOrderRequestDto request) {
 
         OrderResponseDto order = orderService.createOrder(userDetails.getId(), request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+    }
+
+    @GetMapping("/{orderId}")
+    @PreAuthorize("hasRole('CUSTOMER') and @securityService.isOrderOwner(#orderId, #userDetails.id)")
+    public ResponseEntity<OrderResponseDto> getOrder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long orderId) {
+
+        OrderResponseDto order = orderService.getOrder(orderId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
