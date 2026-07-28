@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,31 +29,15 @@ public class OrderService {
     @Transactional
     public OrderResponseDto createOrder(Long customerId, CreateOrderRequestDto request) {
         User customer = userService.findUserById(customerId);
-
         Store store = storeService.findActiveStoreById(request.storeId());
 
-        List<OrderItem> orderItems = new ArrayList<>();
-        BigDecimal total = BigDecimal.ZERO;
+        List<OrderItem> orderItems = request.items().stream()
+                .map(item -> buildOrderItem(store, item))
+                .collect(Collectors.toCollection(ArrayList::new));
 
-        for (var itemRequest : request.items()) {
-            Product product = productService.findProductById(itemRequest.productId());
-
-            if (!product.isActive()) {
-                throw new IllegalArgumentException("Product " + product.getId() + " is not active");
-            }
-
-            stockService.reserveStock(product.getId(), itemRequest.quantity());
-
-            OrderItem orderItem = OrderItem.builder()
-                    .product(product)
-                    .quantity(itemRequest.quantity())
-                    .unitPrice(product.getPrice())
-                    .build();
-
-            orderItems.add(orderItem);
-
-            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(itemRequest.quantity())));
-        }
+        BigDecimal total = orderItems.stream()
+                .map(OrderItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Order order = Order.builder()
                 .customer(customer)
@@ -68,5 +53,24 @@ public class OrderService {
         log.info("Order created: ID {} for customer {} at store {}", savedOrder.getId(), customerId, store.getId());
 
         return OrderResponseDto.fromEntity(savedOrder);
+    }
+
+    private OrderItem buildOrderItem(Store store, CreateOrderRequestDto.OrderItemRequest itemRequest) {
+        Product product = productService.findProductById(itemRequest.productId());
+
+        if (!product.getStore().getId().equals(store.getId())) {
+            throw new IllegalArgumentException("Product " + product.getId() + " does not belong to store " + store.getId());
+        }
+        if (!product.isActive()) {
+            throw new IllegalArgumentException("Product " + product.getId() + " is not active");
+        }
+
+        stockService.reserveStock(product.getId(), itemRequest.quantity());
+
+        return OrderItem.builder()
+                .product(product)
+                .quantity(itemRequest.quantity())
+                .unitPrice(product.getPrice())
+                .build();
     }
 }
