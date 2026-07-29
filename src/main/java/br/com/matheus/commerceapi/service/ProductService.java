@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -106,6 +105,22 @@ public class ProductService {
     public void deleteProduct(Long productId) {
         Product product = findProductById(productId);
         productRepository.delete(product);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDto> searchActiveProducts(String name, Long categoryId, Long storeId,
+                                                          BigDecimal minPrice, BigDecimal maxPrice,
+                                                          Pageable pageable) {
+        return productRepository.searchActiveProducts(name, categoryId, storeId, minPrice, maxPrice, pageable)
+                .map(ProductResponseDto::fromEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductDetailsResponseDto getPublicProductDetails(Long productId) {
+        Product product = productRepository.findById(productId)
+                .filter(Product::isActive)
+                .orElseThrow(() -> new NotFoundException("Product not found or inactive"));
+        return ProductDetailsResponseDto.fromEntity(product);
     }
 
     public Product findProductById(Long productId) {
