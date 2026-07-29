@@ -5,6 +5,10 @@ import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.OrderService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -72,5 +76,15 @@ public class OrderController {
 
         OrderResponseDto order = orderService.cancelOrder(orderId);
         return ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Page<OrderResponseDto>> getCustomerOrders(
+            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        Page<OrderResponseDto> orders = orderService.getCustomerOrders(userDetails.getId(), pageable);
+
+        return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 }

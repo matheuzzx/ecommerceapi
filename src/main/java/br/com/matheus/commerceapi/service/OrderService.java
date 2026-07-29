@@ -8,6 +8,8 @@ import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -129,6 +131,11 @@ public class OrderService {
         log.info("Order canceled: ID {}", orderId);
 
         return OrderResponseDto.fromEntity(savedOrder);
+    }
+
+    public Page<OrderResponseDto> getCustomerOrders(Long customerId, Pageable pageable){
+        Page<Order> orders = orderRepository.findByCustomerId(customerId, pageable);
+        return orders.map(OrderResponseDto::fromEntity);
     }
 
     private void confirmStockReservations(Order order) {
