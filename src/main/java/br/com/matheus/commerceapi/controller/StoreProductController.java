@@ -16,23 +16,25 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/myProducts")
-public class ProductController {
+@RequestMapping("/stores/my/products")
+public class StoreProductController {
 
     private final ProductService productService;
 
-    public ProductController(ProductService productService) {
+    public StoreProductController(ProductService productService) {
         this.productService = productService;
     }
 
     @PostMapping
-    @PreAuthorize("@securityService.isStoreOwner(#request.storeId(), #authentication.principal.id)")
-    public ResponseEntity<ProductResponseDto> createProduct(@RequestBody @Valid CreateProductRequestDto request, Authentication authentication) {
+    @PreAuthorize("@securityService.isStoreOwner(#request.storeId(), #userDetails.id)")
+    public ResponseEntity<ProductResponseDto> createProduct(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestBody @Valid CreateProductRequestDto request) {
+
         ProductResponseDto product = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }

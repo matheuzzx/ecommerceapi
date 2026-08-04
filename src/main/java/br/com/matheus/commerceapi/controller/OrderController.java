@@ -47,27 +47,6 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(order);
     }
 
-    @PutMapping("/{orderId}/confirm")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<OrderResponseDto> confirmOrder(@PathVariable Long orderId) {
-        OrderResponseDto order = orderService.confirmOrder(orderId);
-        return ResponseEntity.ok(order);
-    }
-
-    @PutMapping("/{orderId}/ship")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<OrderResponseDto> shipOrder(@PathVariable Long orderId) {
-        OrderResponseDto order = orderService.shipOrder(orderId);
-        return ResponseEntity.ok(order);
-    }
-
-    @PutMapping("/{orderId}/deliver")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<OrderResponseDto> deliverOrder(@PathVariable Long orderId) {
-        OrderResponseDto order = orderService.deliverOrder(orderId);
-        return ResponseEntity.ok(order);
-    }
-
     @PutMapping("/{orderId}/cancel")
     @PreAuthorize("hasRole('CUSTOMER') and @securityService.isOrderOwner(#orderId, #userDetails.id)")
     public ResponseEntity<OrderResponseDto> cancelOrder(
@@ -85,17 +64,6 @@ public class OrderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
         Page<OrderResponseDto> orders = orderService.getCustomerOrders(userDetails.getId(), pageable);
-
-        return ResponseEntity.status(HttpStatus.OK).body(orders);
-    }
-
-    @GetMapping("/myStore")
-    @PreAuthorize("hasRole('STOREOWNER')")
-    public ResponseEntity<Page<OrderResponseDto>> getStoreOrders(
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ){
-        Page<OrderResponseDto> orders = orderService.getStoreOwnerOrders(userDetails.getId(), pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }

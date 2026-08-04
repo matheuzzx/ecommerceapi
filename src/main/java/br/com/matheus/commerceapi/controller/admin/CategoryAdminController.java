@@ -1,4 +1,4 @@
-package br.com.matheus.commerceapi.controller;
+package br.com.matheus.commerceapi.controller.admin;
 
 import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.request.category.UpdateCategoryRequestDto;
@@ -15,12 +15,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("category")
-public class CategoryController {
+@RequestMapping("/admin/categories")
+public class CategoryAdminController {
 
     private final CategoryService categoryService;
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryAdminController(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
 
@@ -33,6 +33,7 @@ public class CategoryController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<CategoryResponseDto>> getCategories(
             @PageableDefault(size = 10, sort = "displayName", direction = Sort.Direction.ASC)
             Pageable pageable) {
@@ -57,14 +58,14 @@ public class CategoryController {
 
     @PutMapping("/{categoryId}/activate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void>activateCategory(@PathVariable Long categoryId){
+    public ResponseEntity<Void> activateCategory(@PathVariable Long categoryId){
         categoryService.activateCategory(categoryId);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{categoryId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void>deleteCategory(@PathVariable Long categoryId){
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long categoryId){
         categoryService.deleteCategory(categoryId);
         return ResponseEntity.noContent().build();
     }

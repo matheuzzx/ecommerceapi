@@ -1,4 +1,4 @@
-package br.com.matheus.commerceapi.controller;
+package br.com.matheus.commerceapi.controller.admin;
 
 import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.request.category.UpdateCategoryRequestDto;
@@ -26,14 +26,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CategoryController Tests")
-class CategoryControllerTest {
+@DisplayName("CategoryAdminController Tests")
+class CategoryAdminControllerTest {
 
     @Mock
     private CategoryService categoryService;
 
     @InjectMocks
-    private CategoryController categoryController;
+    private CategoryAdminController categoryController;
 
     private static final Long CATEGORY_ID = 1L;
     private static final String DISPLAY_NAME = "Eletrônicos";

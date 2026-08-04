@@ -23,14 +23,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ProductController Tests")
-class ProductControllerTest {
+@DisplayName("StoreProductController Tests")
+class StoreProductControllerTest {
 
     @Mock
     private ProductService productService;
 
     @InjectMocks
-    private ProductController productController;
+    private StoreProductController productController;
 
     private static final Long PRODUCT_ID = 1L;
     private static final Long USER_ID = 1L;
