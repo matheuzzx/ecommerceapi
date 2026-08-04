@@ -1,5 +1,7 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.dto.request.user.UpdateUserRequestDto;
+import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.exception.EmailAlreadyExistsException;
 import br.com.matheus.commerceapi.exception.UserNotFoundException;
@@ -25,6 +27,18 @@ public class UserService {
     public User findUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    public UserResponseDto updateUser(Long userId, UpdateUserRequestDto request) {
+        User user = findUserById(userId);
+
+        user.setName(request.name());
+
+        User savedUser = userRepository.save(user);
+
+        log.info("User updated: {} (ID: {})", savedUser.getName(), userId);
+
+        return UserResponseDto.fromEntity(savedUser);
     }
 
     public void validateUniqueEmail(String email) {
