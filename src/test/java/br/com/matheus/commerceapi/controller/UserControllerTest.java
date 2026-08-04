@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.controller;
 
+import br.com.matheus.commerceapi.dto.request.user.UpdateUserRequestDto;
 import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
@@ -65,5 +66,26 @@ class UserControllerTest {
 
         assertThatThrownBy(() -> userController.getMe(userDetails))
                 .isInstanceOf(UserNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Should update current user and return 200")
+    void shouldUpdateCurrentUser() {
+        UserDetailsImpl userDetails = createUserDetails();
+        UpdateUserRequestDto request = new UpdateUserRequestDto("New Name");
+        User updatedUser = User.builder()
+                .id(USER_ID)
+                .name("New Name")
+                .email("john@example.com")
+                .userRole(UserRole.CUSTOMER)
+                .build();
+
+        when(userService.updateUser(USER_ID, request)).thenReturn(UserResponseDto.fromEntity(updatedUser));
+
+        ResponseEntity<UserResponseDto> result = userController.updateMe(userDetails, request);
+
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody().name()).isEqualTo("New Name");
+        verify(userService).updateUser(USER_ID, request);
     }
 }
