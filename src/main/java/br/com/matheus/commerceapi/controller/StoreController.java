@@ -9,7 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,48 +23,44 @@ public class StoreController {
     }
 
     @PostMapping
-    @PreAuthorize("@securityService.canCreateStore(#authentication.principal.id)")
-    public ResponseEntity<StoreResponseDto> register(@RequestBody @Valid CreateStoreRequestDto request, Authentication authentication){
-        Long userId = getCurrentUserId(authentication);
-        StoreResponseDto store = storeService.createStore(request, userId);
+    @PreAuthorize("@securityService.canCreateStore(#userDetails.id)")
+    public ResponseEntity<StoreResponseDto> register(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestBody @Valid CreateStoreRequestDto request) {
+
+        StoreResponseDto store = storeService.createStore(request, userDetails.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(store);
     }
 
     @GetMapping("/{storeId}")
-    @PreAuthorize("@securityService.isStoreOwner(#storeId, #authentication.principal.id) or hasRole('ADMIN')")
+    @PreAuthorize("@securityService.isStoreOwner(#storeId, #userDetails.id) or hasRole('ADMIN')")
     public ResponseEntity<StoreResponseDto> getStore(
-            @PathVariable Long storeId,
-            Authentication authentication) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long storeId) {
 
         StoreResponseDto response = storeService.getStore(storeId);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{storeId}")
-    @PreAuthorize("@securityService.isStoreOwner(#storeId, #authentication.principal.id)")
+    @PreAuthorize("@securityService.isStoreOwner(#storeId, #userDetails.id)")
     public ResponseEntity<StoreResponseDto> updateStore(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long storeId,
-            @RequestBody @Valid UpdateStoreRequestDto request,
-            Authentication authentication) {
+            @RequestBody @Valid UpdateStoreRequestDto request) {
 
         StoreResponseDto response = storeService.updateStore(storeId, request);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{storeId}")
-    @PreAuthorize("@securityService.isStoreOwner(#storeId, #authentication.principal.id) or hasRole('ADMIN')")
+    @PreAuthorize("@securityService.isStoreOwner(#storeId, #userDetails.id) or hasRole('ADMIN')")
     public ResponseEntity<Void> deleteStore(
-            @PathVariable Long storeId,
-            Authentication authentication) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long storeId) {
 
         storeService.deleteStore(storeId);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long getCurrentUserId(Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        assert userDetails != null;
-        return userDetails.getUser().getId();
     }
 
 }
