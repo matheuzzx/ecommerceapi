@@ -138,6 +138,12 @@ public class OrderService {
         return orders.map(OrderResponseDto::fromEntity);
     }
 
+    public Page<OrderResponseDto> getStoreOwnerOrders(Long userId, Pageable pageable){
+        Store store = storeService.findStoreByStoreOwner(userId);
+        Page<Order> orders = orderRepository.findByStoreId(store.getId(), pageable);
+        return orders.map(OrderResponseDto::fromEntity);
+    }
+
     private void confirmStockReservations(Order order) {
         order.getItems().forEach(item ->
                 stockService.confirmReservation(item.getProduct().getId()));

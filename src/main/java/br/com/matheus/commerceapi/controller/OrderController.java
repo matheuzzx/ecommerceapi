@@ -88,4 +88,15 @@ public class OrderController {
 
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
+
+    @GetMapping("/myStore")
+    @PreAuthorize("hasRole('STOREOWNER')")
+    public ResponseEntity<Page<OrderResponseDto>> getStoreOrders(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        Page<OrderResponseDto> orders = orderService.getStoreOwnerOrders(userDetails.getId(), pageable);
+
+        return ResponseEntity.status(HttpStatus.OK).body(orders);
+    }
 }
