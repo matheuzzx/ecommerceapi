@@ -77,7 +77,7 @@ public class Order {
 
     public void cancel() {
         if (!canCancel()) {
-            throw new RuntimeException("Pedido não pode ser cancelado no status: " + status);
+            throw new RuntimeException("Order cannot be canceled in status: " + status);
         }
         this.status = OrderStatus.CANCELED;
     }
