@@ -2,8 +2,10 @@ package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.product.CreateProductRequestDto;
 import br.com.matheus.commerceapi.dto.request.product.UpdateProductRequestDto;
+import br.com.matheus.commerceapi.dto.request.product.UpdateStockRequestDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
+import br.com.matheus.commerceapi.dto.response.stock.StockResponseDto;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.ProductService;
 import jakarta.validation.Valid;
@@ -76,5 +78,27 @@ public class ProductController {
         productService.deleteProduct(productId);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PutMapping("/{productId}/stock/add")
+    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
+    public ResponseEntity<StockResponseDto> addStock(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long productId,
+            @RequestBody @Valid UpdateStockRequestDto request) {
+
+        StockResponseDto stock = productService.addStock(productId, request.amount());
+        return ResponseEntity.ok(stock);
+    }
+
+    @PutMapping("/{productId}/stock/remove")
+    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
+    public ResponseEntity<StockResponseDto> removeStock(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long productId,
+            @RequestBody @Valid UpdateStockRequestDto request) {
+
+        StockResponseDto stock = productService.removeStock(productId, request.amount());
+        return ResponseEntity.ok(stock);
     }
 }

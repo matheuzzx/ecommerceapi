@@ -4,6 +4,7 @@ import br.com.matheus.commerceapi.dto.request.product.CreateProductRequestDto;
 import br.com.matheus.commerceapi.dto.request.product.UpdateProductRequestDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
+import br.com.matheus.commerceapi.dto.response.stock.StockResponseDto;
 import br.com.matheus.commerceapi.entity.Category;
 import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
@@ -105,6 +106,16 @@ public class ProductService {
     public void deleteProduct(Long productId) {
         Product product = findProductById(productId);
         productRepository.delete(product);
+    }
+
+    public StockResponseDto addStock(Long productId, Integer amount) {
+        findProductById(productId);
+        return StockResponseDto.fromEntity(stockService.addStock(productId, amount));
+    }
+
+    public StockResponseDto removeStock(Long productId, Integer amount) {
+        findProductById(productId);
+        return StockResponseDto.fromEntity(stockService.removeStock(productId, amount));
     }
 
     @Transactional(readOnly = true)
