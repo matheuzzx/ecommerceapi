@@ -79,8 +79,9 @@ public class OrderController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<Page<OrderResponseDto>> getCustomerOrders(
-            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
         Page<OrderResponseDto> orders = orderService.getCustomerOrders(userDetails.getId(), pageable);
