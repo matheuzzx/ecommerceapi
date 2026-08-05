@@ -29,11 +29,13 @@ public class OrderService {
     private final ProductService productService;
     private final StoreService storeService;
     private final StockService stockService;
+    private final AddressService addressService;
 
     @Transactional
     public OrderResponseDto createOrder(Long customerId, CreateOrderRequestDto request) {
         User customer = userService.findUserById(customerId);
         Store store = storeService.findActiveStoreById(request.storeId());
+        ShippingAddress shippingAddress = findShippingAddress(customerId, request.addressId());
 
         List<OrderItem> orderItems = request.items().stream()
                 .map(item -> buildOrderItem(store, item))
@@ -47,6 +49,7 @@ public class OrderService {
                 .customer(customer)
                 .store(store)
                 .total(total)
+                .shippingAddress(shippingAddress)
                 .items(orderItems)
                 .build();
 
@@ -156,6 +159,12 @@ public class OrderService {
 
     private Order findOrderById(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order not found with id: " + orderId));
+    }
+
+    private ShippingAddress findShippingAddress(Long userId, Long addressId) {
+        Address address = addressService.findAddressByIdAndUser(addressId, userId);
+
+        return ShippingAddress.from(address);
     }
 
     private OrderItem buildOrderItem(Store store, CreateOrderRequestDto.OrderItemRequest itemRequest) {

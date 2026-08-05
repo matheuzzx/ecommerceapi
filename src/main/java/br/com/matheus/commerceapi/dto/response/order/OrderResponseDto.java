@@ -2,6 +2,7 @@ package br.com.matheus.commerceapi.dto.response.order;
 
 import br.com.matheus.commerceapi.dto.response.store.StoreSummaryDto;
 import br.com.matheus.commerceapi.entity.Order;
+import br.com.matheus.commerceapi.entity.ShippingAddress;
 import br.com.matheus.commerceapi.enums.OrderStatus;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ public record OrderResponseDto(
         OrderStatus status,
         LocalDateTime date,
         BigDecimal total,
+        ShippingAddress shippingAddress,
         List<OrderItemResponseDto> items
 ) {
     public static OrderResponseDto fromEntity(Order order) {
@@ -25,6 +27,7 @@ public record OrderResponseDto(
                 order.getStatus(),
                 order.getDate(),
                 order.getTotal(),
+                order.getShippingAddress(),
                 order.getItems().stream().map(OrderItemResponseDto::fromEntity).toList()
         );
     }

@@ -10,6 +10,8 @@ import java.util.List;
 public record CreateOrderRequestDto(
         @NotNull Long storeId,
 
+        @NotNull Long addressId,
+
         @NotEmpty @Valid List<OrderItemRequest> items
 ) {
     public record OrderItemRequest(
