@@ -50,7 +50,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("Should create order and return 201")
         void shouldCreateOrderAndReturnCreated() {
-            CreateOrderRequestDto request = new CreateOrderRequestDto(1L, List.of());
+            CreateOrderRequestDto request = new CreateOrderRequestDto(1L, 10L, List.of());
             UserDetailsImpl userDetails = createUserDetails();
 
             when(orderService.createOrder(USER_ID, request)).thenReturn(null);
@@ -63,7 +63,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("Should propagate 404 when user not found")
         void shouldPropagateNotFoundWhenUserNotFound() {
-            CreateOrderRequestDto request = new CreateOrderRequestDto(1L, List.of());
+            CreateOrderRequestDto request = new CreateOrderRequestDto(1L, 10L, List.of());
             UserDetailsImpl userDetails = createUserDetails();
 
             when(orderService.createOrder(USER_ID, request)).thenThrow(new NotFoundException("User not found with id: " + USER_ID));
@@ -76,7 +76,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("Should propagate 404 when store not found")
         void shouldPropagateNotFoundWhenStoreNotFound() {
-            CreateOrderRequestDto request = new CreateOrderRequestDto(1L, List.of());
+            CreateOrderRequestDto request = new CreateOrderRequestDto(1L, 10L, List.of());
             UserDetailsImpl userDetails = createUserDetails();
 
             when(orderService.createOrder(USER_ID, request)).thenThrow(new NotFoundException("Store not found"));
