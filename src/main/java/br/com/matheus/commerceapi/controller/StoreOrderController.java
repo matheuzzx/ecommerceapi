@@ -33,4 +33,24 @@ public class StoreOrderController {
 
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
+
+    @PutMapping("/{orderId}/ship")
+    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isStoreOwnerOfOrder(#orderId, #userDetails.id)")
+    public ResponseEntity<OrderResponseDto> shipOrder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long orderId) {
+
+        OrderResponseDto order = orderService.shipOrder(orderId);
+        return ResponseEntity.ok(order);
+    }
+
+    @PutMapping("/{orderId}/deliver")
+    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isStoreOwnerOfOrder(#orderId, #userDetails.id)")
+    public ResponseEntity<OrderResponseDto> deliverOrder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long orderId) {
+
+        OrderResponseDto order = orderService.deliverOrder(orderId);
+        return ResponseEntity.ok(order);
+    }
 }

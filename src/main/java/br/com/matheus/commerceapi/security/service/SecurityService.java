@@ -44,4 +44,13 @@ public class SecurityService {
                 .map(order -> order.getCustomer().getId().equals(userId))
                 .orElse(false);
     }
+
+    public boolean isStoreOwnerOfOrder(Long orderId, Long userId) {
+        return orderRepository.findById(orderId)
+                .map(order -> {
+                    Store store = order.getStore();
+                    return store.getStoreOwner().getId().equals(userId);
+                })
+                .orElse(false);
+    }
 }
