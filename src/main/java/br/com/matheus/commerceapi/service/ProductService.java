@@ -10,6 +10,7 @@ import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.exception.AlreadyExistsException;
+import br.com.matheus.commerceapi.exception.InvalidArgumentException;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.ProductRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
@@ -172,7 +173,7 @@ public class ProductService {
     private void validatePrice(BigDecimal price) {
         if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
             log.warn("Invalid product price: {}", price);
-            throw new IllegalArgumentException("Price must be greater than or equal to zero");
+            throw new InvalidArgumentException("Price must be greater than or equal to zero");
         }
     }
 }

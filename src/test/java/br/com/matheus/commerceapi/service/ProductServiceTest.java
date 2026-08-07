@@ -9,6 +9,7 @@ import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.exception.AlreadyExistsException;
+import br.com.matheus.commerceapi.exception.InvalidArgumentException;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.ProductRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
@@ -316,7 +317,7 @@ class ProductServiceTest {
             when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.of(existingProduct));
 
             assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request, USER_ID))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(InvalidArgumentException.class)
                     .hasMessageContaining("Price");
 
             verify(productRepository, never()).save(any(Product.class));

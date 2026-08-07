@@ -4,6 +4,7 @@ import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.request.category.UpdateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.response.category.CategoryResponseDto;
 import br.com.matheus.commerceapi.entity.Category;
+import br.com.matheus.commerceapi.exception.ConflictException;
 import br.com.matheus.commerceapi.exception.NameAlreadyExistsException;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.CategoryRepository;
@@ -109,7 +110,7 @@ public class CategoryService {
 
         if(!category.isActive()) {
             log.warn("Category is not active: ID {}", categoryId);
-            throw new IllegalStateException("Category is not active: " + categoryId);
+            throw new ConflictException("Category is not active: " + categoryId);
         }
 
         return category;

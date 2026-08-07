@@ -4,6 +4,7 @@ import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.request.category.UpdateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.response.category.CategoryResponseDto;
 import br.com.matheus.commerceapi.entity.Category;
+import br.com.matheus.commerceapi.exception.ConflictException;
 import br.com.matheus.commerceapi.exception.NameAlreadyExistsException;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.CategoryRepository;
@@ -420,7 +421,7 @@ class CategoryServiceTest {
             when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(category));
 
             assertThatThrownBy(() -> categoryService.findActiveCategoryById(CATEGORY_ID))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(ConflictException.class)
                     .hasMessageContaining("not active");
 
             verify(categoryRepository, never()).save(any(Category.class));

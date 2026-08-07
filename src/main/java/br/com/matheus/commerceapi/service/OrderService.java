@@ -4,6 +4,8 @@ import br.com.matheus.commerceapi.dto.request.order.CreateOrderRequestDto;
 import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
 import br.com.matheus.commerceapi.entity.*;
 import br.com.matheus.commerceapi.enums.OrderStatus;
+import br.com.matheus.commerceapi.exception.ConflictException;
+import br.com.matheus.commerceapi.exception.InvalidArgumentException;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -72,7 +74,7 @@ public class OrderService {
 
         if (order.getStatus() != OrderStatus.CREATED) {
             log.warn("Order {} cannot be confirmed: status is {}", orderId, order.getStatus());
-            throw new IllegalStateException("Order must be CREATED to be confirmed");
+            throw new ConflictException("Order must be CREATED to be confirmed");
         }
 
         order.nextStatus();
@@ -109,7 +111,7 @@ public class OrderService {
 
         if (!order.canCancel()) {
             log.warn("Order {} cannot be canceled: status is {}", orderId, order.getStatus());
-            throw new IllegalStateException("Order cannot be canceled in status: " + order.getStatus());
+            throw new ConflictException("Order cannot be canceled in status: " + order.getStatus());
         }
 
         order.cancel();
@@ -134,7 +136,7 @@ public class OrderService {
     private OrderResponseDto ship(Order order) {
         if (order.getStatus() != OrderStatus.PAID) {
             log.warn("Order {} cannot be shipped: status is {}", order.getId(), order.getStatus());
-            throw new IllegalStateException("Order must be PAID to be shipped");
+            throw new ConflictException("Order must be PAID to be shipped");
         }
 
         order.nextStatus();
@@ -146,7 +148,7 @@ public class OrderService {
     private OrderResponseDto deliver(Order order) {
         if (order.getStatus() != OrderStatus.SHIPPED) {
             log.warn("Order {} cannot be delivered: status is {}", order.getId(), order.getStatus());
-            throw new IllegalStateException("Order must be SHIPPED to be delivered");
+            throw new ConflictException("Order must be SHIPPED to be delivered");
         }
 
         order.nextStatus();
@@ -199,11 +201,11 @@ public class OrderService {
 
         if (!product.getStore().getId().equals(store.getId())) {
             log.warn("Product {} does not belong to store {}", product.getId(), store.getId());
-            throw new IllegalArgumentException("Product " + product.getId() + " does not belong to store " + store.getId());
+            throw new InvalidArgumentException("Product " + product.getId() + " does not belong to store " + store.getId());
         }
         if (!product.isActive()) {
             log.warn("Product {} is not active", product.getId());
-            throw new IllegalArgumentException("Product " + product.getId() + " is not active");
+            throw new InvalidArgumentException("Product " + product.getId() + " is not active");
         }
 
         stockService.reserveStock(product.getId(), itemRequest.quantity());

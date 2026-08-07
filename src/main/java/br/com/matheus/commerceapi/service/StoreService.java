@@ -149,7 +149,7 @@ public class StoreService {
 
         if (!store.isActive()) {
             log.warn("Store is not active: ID {}", storeId);
-            throw new IllegalStateException("Store is not active: " + storeId);
+            throw new ConflictException("Store is not active: " + storeId);
         }
 
         return store;
@@ -175,7 +175,7 @@ public class StoreService {
 
         if(!store.isActive()) {
             log.warn("Store is not active: ID {}", storeId);
-            throw new IllegalStateException("Store is not active: " + storeId);
+            throw new ConflictException("Store is not active: " + storeId);
         }
 
         return store;

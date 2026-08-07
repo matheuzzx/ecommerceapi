@@ -1,5 +1,7 @@
 package br.com.matheus.commerceapi.entity;
 
+import br.com.matheus.commerceapi.exception.ConflictException;
+import br.com.matheus.commerceapi.exception.InvalidArgumentException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -66,11 +68,11 @@ public class Stock {
 
     public void confirmReservation() {
         if (this.reserved == 0) {
-            throw new IllegalStateException("No reservation to confirm for product: " + product.getId());
+            throw new ConflictException("No reservation to confirm for product: " + product.getId());
         }
 
         if (this.reserved > this.quantity) {
-            throw new IllegalStateException("Reserved amount exceeds physical stock. Reserved: " +
+            throw new ConflictException("Reserved amount exceeds physical stock. Reserved: " +
                     this.reserved + ", Available: " + this.quantity);
         }
 
@@ -81,7 +83,7 @@ public class Stock {
 
     public void cancelReservation() {
         if (this.reserved == 0) {
-            throw new IllegalStateException("No reservation to cancel for product: " + product.getId());
+            throw new ConflictException("No reservation to cancel for product: " + product.getId());
         }
 
         this.reserved = 0;
@@ -90,14 +92,14 @@ public class Stock {
 
     private void validatePositiveAmount(Integer amount) {
         if (amount == null || amount <= 0) {
-            throw new IllegalArgumentException("Amount must be positive and not null");
+            throw new InvalidArgumentException("Amount must be positive and not null");
         }
     }
 
     private void validateAmountWithStock(Integer amount) {
         validatePositiveAmount(amount);
         if (amount > getAvailable()) {
-            throw new IllegalArgumentException(
+            throw new InvalidArgumentException(
                     String.format("Insufficient stock. Requested: %d, Available: %d", amount, getAvailable())
             );
         }

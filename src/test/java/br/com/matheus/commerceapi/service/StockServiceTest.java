@@ -2,6 +2,8 @@ package br.com.matheus.commerceapi.service;
 
 import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
+import br.com.matheus.commerceapi.exception.ConflictException;
+import br.com.matheus.commerceapi.exception.InvalidArgumentException;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.StockRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -152,7 +154,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.addStock(PRODUCT_ID, invalidAmount))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidArgumentException.class);
 
             verify(stockRepository, never()).save(any(Stock.class));
         }
@@ -165,7 +167,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.addStock(PRODUCT_ID, null))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidArgumentException.class);
 
             verify(stockRepository, never()).save(any(Stock.class));
         }
@@ -202,7 +204,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.removeStock(PRODUCT_ID, invalidAmount))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidArgumentException.class);
 
             verify(stockRepository, never()).save(any(Stock.class));
         }
@@ -215,7 +217,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.removeStock(PRODUCT_ID, null))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidArgumentException.class);
 
             verify(stockRepository, never()).save(any(Stock.class));
         }
@@ -228,7 +230,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.removeStock(PRODUCT_ID, AMOUNT))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(InvalidArgumentException.class)
                     .hasMessageContaining("Insufficient stock");
 
             verify(stockRepository, never()).save(any(Stock.class));
@@ -267,7 +269,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.reserveStock(PRODUCT_ID, invalidAmount))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidArgumentException.class);
 
             verify(stockRepository, never()).save(any(Stock.class));
         }
@@ -280,7 +282,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.reserveStock(PRODUCT_ID, null))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidArgumentException.class);
 
             verify(stockRepository, never()).save(any(Stock.class));
         }
@@ -293,7 +295,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.reserveStock(PRODUCT_ID, AMOUNT))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(InvalidArgumentException.class)
                     .hasMessageContaining("Insufficient stock");
 
             verify(stockRepository, never()).save(any(Stock.class));
@@ -331,7 +333,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.confirmReservation(PRODUCT_ID))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(ConflictException.class)
                     .hasMessageContaining("No reservation to confirm");
 
             verify(stockRepository, never()).save(any(Stock.class));
@@ -369,7 +371,7 @@ class StockServiceTest {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
             assertThatThrownBy(() -> stockService.cancelReservation(PRODUCT_ID))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(ConflictException.class)
                     .hasMessageContaining("No reservation to cancel");
 
             verify(stockRepository, never()).save(any(Stock.class));

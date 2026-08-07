@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.entity;
 
 import br.com.matheus.commerceapi.enums.OrderStatus;
+import br.com.matheus.commerceapi.exception.ConflictException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -80,7 +81,7 @@ public class Order {
 
     public void cancel() {
         if (!canCancel()) {
-            throw new RuntimeException("Order cannot be canceled in status: " + status);
+            throw new ConflictException("Order cannot be canceled in status: " + status);
         }
         this.status = OrderStatus.CANCELED;
     }
