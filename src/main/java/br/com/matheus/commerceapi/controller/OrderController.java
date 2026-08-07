@@ -37,23 +37,23 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    @PreAuthorize("hasRole('CUSTOMER') and @securityService.isOrderOwner(#orderId, #userDetails.id)")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<OrderResponseDto> getOrder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long orderId) {
 
-        OrderResponseDto order = orderService.getOrder(orderId);
+        OrderResponseDto order = orderService.getOrder(orderId, userDetails.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(order);
     }
 
     @PutMapping("/{orderId}/cancel")
-    @PreAuthorize("hasRole('CUSTOMER') and @securityService.isOrderOwner(#orderId, #userDetails.id)")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<OrderResponseDto> cancelOrder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long orderId) {
 
-        OrderResponseDto order = orderService.cancelOrder(orderId);
+        OrderResponseDto order = orderService.cancelOrder(orderId, userDetails.getId());
         return ResponseEntity.ok(order);
     }
 

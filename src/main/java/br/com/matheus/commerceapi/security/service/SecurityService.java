@@ -1,10 +1,6 @@
 package br.com.matheus.commerceapi.security.service;
 
-import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.enums.UserRole;
-import br.com.matheus.commerceapi.repository.OrderRepository;
-import br.com.matheus.commerceapi.repository.ProductRepository;
-import br.com.matheus.commerceapi.repository.StoreRepository;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,44 +9,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SecurityService {
 
-    private final StoreRepository storeRepository;
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
-    private final OrderRepository orderRepository;
-
-    public boolean isStoreOwner(Long storeId, Long userId) {
-        return storeRepository.findById(storeId)
-                .map(store -> store.getStoreOwner().getId().equals(userId))
-                .orElse(false);
-    }
 
     public boolean canCreateStore(Long userId) {
         return userRepository.findById(userId)
                 .map(user -> user.getUserRole() == UserRole.STOREOWNER)
-                .orElse(false);
-    }
-
-    public boolean isProductOwner(Long productId, Long userId) {
-        return productRepository.findById(productId)
-                .map(product -> {
-                    Store store = product.getStore();
-                    return store.getStoreOwner().getId().equals(userId);
-                })
-                .orElse(false);
-    }
-
-    public boolean isOrderOwner(Long orderId, Long userId) {
-        return orderRepository.findById(orderId)
-                .map(order -> order.getCustomer().getId().equals(userId))
-                .orElse(false);
-    }
-
-    public boolean isStoreOwnerOfOrder(Long orderId, Long userId) {
-        return orderRepository.findById(orderId)
-                .map(order -> {
-                    Store store = order.getStore();
-                    return store.getStoreOwner().getId().equals(userId);
-                })
                 .orElse(false);
     }
 }

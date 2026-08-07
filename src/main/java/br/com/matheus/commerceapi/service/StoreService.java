@@ -62,19 +62,21 @@ public class StoreService {
         return StoreResponseDto.fromEntity(savedStore);
     }
 
-    public StoreResponseDto getStore(Long storeId) {
-        Store store = findStoreById(storeId);
+    public StoreResponseDto getStore(Long storeId, Long userId) {
+        Store store = isAdmin(userId)
+                ? findStoreById(storeId)
+                : findStoreByOwner(storeId, userId);
         return StoreResponseDto.fromEntity(store);
     }
 
-    public StoreResponseDto updateStore(Long storeId, UpdateStoreRequestDto request) {
+    public StoreResponseDto updateStore(Long storeId, UpdateStoreRequestDto request, Long userId) {
 
         Map<String, String> fields = new HashMap<>();
         fields.put("Name", request.name());
 
         validationUtils.validateRequiredString(fields);
 
-        Store store = findStoreById(storeId);
+        Store store = findStoreByOwner(storeId, userId);
 
         store.setName(request.name());
 
@@ -83,8 +85,10 @@ public class StoreService {
         return StoreResponseDto.fromEntity(savedStore);
     }
 
-    public void deleteStore(Long storeId) {
-        Store store = findStoreById(storeId);
+    public void deleteStore(Long storeId, Long userId) {
+        Store store = isAdmin(userId)
+                ? findStoreById(storeId)
+                : findStoreByOwner(storeId, userId);
         User storeOwner = store.getStoreOwner();
         storeOwner.setStore(null);
         storeRepository.delete(store);
@@ -128,6 +132,23 @@ public class StoreService {
         }
 
         return user;
+    }
+
+    private boolean isAdmin(Long userId) {
+        return userService.findUserById(userId).getUserRole() == UserRole.ADMIN;
+    }
+
+    private Store findStoreByOwner(Long storeId, Long userId) {
+        return storeRepository.findByIdAndStoreOwnerId(storeId, userId)
+                .orElseThrow(StoreNotFoundException::new);
+    }
+
+    public Store findActiveStoreByOwner(Long storeId, Long userId) {
+        Store store = findStoreByOwner(storeId, userId);
+
+        if (!store.isActive()) throw new IllegalStateException("Store is not active: " + storeId);
+
+        return store;
     }
 
     public Store findStoreById(Long storeId) {

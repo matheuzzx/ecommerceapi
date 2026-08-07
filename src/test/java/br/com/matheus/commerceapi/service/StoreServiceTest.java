@@ -349,10 +349,11 @@ public class StoreServiceTest {
             User user = createValidStoreOwner();
             Store store = createStore(user);
 
-            when(storeRepository.findById(STORE_ID)).thenReturn(Optional.of(store));
+            when(userService.findUserById(USER_ID)).thenReturn(user);
+            when(storeRepository.findByIdAndStoreOwnerId(STORE_ID, USER_ID)).thenReturn(Optional.of(store));
 
             // Act
-            StoreResponseDto response = storeService.getStore(STORE_ID);
+            StoreResponseDto response = storeService.getStore(STORE_ID, USER_ID);
 
             // Assert
             assertThat(response.id()).isEqualTo(STORE_ID);
@@ -366,10 +367,11 @@ public class StoreServiceTest {
         @DisplayName("Should throw exception when store not found")
         void shouldThrowExceptionWhenStoreNotFound() {
             // Arrange
-            when(storeRepository.findById(STORE_ID)).thenReturn(Optional.empty());
+            when(userService.findUserById(USER_ID)).thenReturn(createValidStoreOwner());
+            when(storeRepository.findByIdAndStoreOwnerId(STORE_ID, USER_ID)).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThatThrownBy(() -> storeService.getStore(STORE_ID))
+            assertThatThrownBy(() -> storeService.getStore(STORE_ID, USER_ID))
                     .isInstanceOf(StoreNotFoundException.class);
         }
     }
@@ -391,12 +393,12 @@ public class StoreServiceTest {
             Store store = createStore(user);
             Store updatedStore = createUpdatedStore(user);
 
-            when(storeRepository.findById(STORE_ID)).thenReturn(Optional.of(store));
+            when(storeRepository.findByIdAndStoreOwnerId(STORE_ID, USER_ID)).thenReturn(Optional.of(store));
             doNothing().when(validationUtils).validateRequiredString(any());
             when(storeRepository.save(any(Store.class))).thenReturn(updatedStore);
 
             // Act
-            StoreResponseDto response = storeService.updateStore(STORE_ID, request);
+            StoreResponseDto response = storeService.updateStore(STORE_ID, request, USER_ID);
 
             // Assert
             assertThat(response.id()).isEqualTo(STORE_ID);
@@ -423,9 +425,9 @@ public class StoreServiceTest {
 
             // Act & Assert
             assertThrows(IllegalArgumentException.class,
-                    () -> storeService.updateStore(STORE_ID, request));
+                    () -> storeService.updateStore(STORE_ID, request, USER_ID));
 
-            verify(storeRepository, never()).findById(any());
+            verify(storeRepository, never()).findByIdAndStoreOwnerId(any(), any());
             verify(storeRepository, never()).save(any(Store.class));
         }
 
@@ -435,10 +437,10 @@ public class StoreServiceTest {
             // Arrange
             UpdateStoreRequestDto request = new UpdateStoreRequestDto(UPDATED_NAME);
 
-            when(storeRepository.findById(STORE_ID)).thenReturn(Optional.empty());
+            when(storeRepository.findByIdAndStoreOwnerId(STORE_ID, USER_ID)).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThatThrownBy(() -> storeService.updateStore(STORE_ID, request))
+            assertThatThrownBy(() -> storeService.updateStore(STORE_ID, request, USER_ID))
                     .isInstanceOf(StoreNotFoundException.class);
 
             verify(storeRepository, never()).save(any(Store.class));
@@ -460,10 +462,11 @@ public class StoreServiceTest {
             User user = createValidStoreOwner();
             Store store = createStore(user);
 
-            when(storeRepository.findById(STORE_ID)).thenReturn(Optional.of(store));
+            when(userService.findUserById(USER_ID)).thenReturn(user);
+            when(storeRepository.findByIdAndStoreOwnerId(STORE_ID, USER_ID)).thenReturn(Optional.of(store));
 
             // Act
-            storeService.deleteStore(STORE_ID);
+            storeService.deleteStore(STORE_ID, USER_ID);
 
             // Assert
             verify(storeRepository).delete(store);
@@ -476,10 +479,11 @@ public class StoreServiceTest {
             User user = createValidStoreOwner();
             Store store = createStore(user);
 
-            when(storeRepository.findById(STORE_ID)).thenReturn(Optional.of(store));
+            when(userService.findUserById(USER_ID)).thenReturn(user);
+            when(storeRepository.findByIdAndStoreOwnerId(STORE_ID, USER_ID)).thenReturn(Optional.of(store));
 
             // Act
-            storeService.deleteStore(STORE_ID);
+            storeService.deleteStore(STORE_ID, USER_ID);
 
             // Assert
             assertThat(user.getStore()).isNull();
@@ -490,10 +494,11 @@ public class StoreServiceTest {
         @DisplayName("Should throw exception when store not found")
         void shouldThrowExceptionWhenStoreNotFound() {
             // Arrange
-            when(storeRepository.findById(STORE_ID)).thenReturn(Optional.empty());
+            when(userService.findUserById(USER_ID)).thenReturn(createValidStoreOwner());
+            when(storeRepository.findByIdAndStoreOwnerId(STORE_ID, USER_ID)).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThatThrownBy(() -> storeService.deleteStore(STORE_ID))
+            assertThatThrownBy(() -> storeService.deleteStore(STORE_ID, USER_ID))
                     .isInstanceOf(StoreNotFoundException.class);
 
             verify(storeRepository, never()).delete(any(Store.class));

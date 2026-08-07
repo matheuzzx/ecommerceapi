@@ -35,22 +35,22 @@ public class StoreOrderController {
     }
 
     @PutMapping("/{orderId}/ship")
-    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isStoreOwnerOfOrder(#orderId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER')")
     public ResponseEntity<OrderResponseDto> shipOrder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long orderId) {
 
-        OrderResponseDto order = orderService.shipOrder(orderId);
+        OrderResponseDto order = orderService.shipOrderForStoreOwner(orderId, userDetails.getId());
         return ResponseEntity.ok(order);
     }
 
     @PutMapping("/{orderId}/deliver")
-    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isStoreOwnerOfOrder(#orderId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER')")
     public ResponseEntity<OrderResponseDto> deliverOrder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long orderId) {
 
-        OrderResponseDto order = orderService.deliverOrder(orderId);
+        OrderResponseDto order = orderService.deliverOrderForStoreOwner(orderId, userDetails.getId());
         return ResponseEntity.ok(order);
     }
 }

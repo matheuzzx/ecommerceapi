@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface StoreRepository extends JpaRepository<Store, Long> {
     boolean existsBySlug(String slug);
     Optional<Store> findById(Long id);
+    Optional<Store> findByIdAndStoreOwnerId(Long id, Long storeOwnerId);
     boolean existsByStoreOwner(User user);
     Optional<Store> findByStoreOwnerId(Long userId);
     boolean existsByEmail(String email);

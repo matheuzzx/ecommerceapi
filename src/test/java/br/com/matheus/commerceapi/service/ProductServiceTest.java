@@ -116,7 +116,7 @@ class ProductServiceTest {
 
             doNothing().when(validationUtils).validateRequiredString(any());
             when(categoryService.findActiveCategoryById(CATEGORY_ID)).thenReturn(category);
-            when(storeService.findActiveStoreById(STORE_ID)).thenReturn(store);
+            when(storeService.findActiveStoreByOwner(STORE_ID, USER_ID)).thenReturn(store);
             when(productRepository.existsByNameAndStoreId(NAME, STORE_ID)).thenReturn(false);
             when(productRepository.save(any(Product.class))).thenAnswer(invocation -> {
                 Product product = invocation.getArgument(0);
@@ -126,7 +126,7 @@ class ProductServiceTest {
             when(stockService.createStockForProduct(any(Product.class))).thenReturn(stock);
             when(stockService.addStock(anyLong(), anyInt())).thenReturn(stock);
 
-            ProductResponseDto result = productService.createProduct(request);
+            ProductResponseDto result = productService.createProduct(request, USER_ID);
 
             assertThat(result.id()).isEqualTo(PRODUCT_ID);
             assertThat(result.name()).isEqualTo(NAME);
@@ -144,10 +144,10 @@ class ProductServiceTest {
 
             doNothing().when(validationUtils).validateRequiredString(any());
             when(categoryService.findActiveCategoryById(CATEGORY_ID)).thenReturn(createCategory());
-            when(storeService.findActiveStoreById(STORE_ID)).thenReturn(createStore());
+            when(storeService.findActiveStoreByOwner(STORE_ID, USER_ID)).thenReturn(createStore());
             when(productRepository.existsByNameAndStoreId(NAME, STORE_ID)).thenReturn(true);
 
-            assertThatThrownBy(() -> productService.createProduct(request))
+            assertThatThrownBy(() -> productService.createProduct(request, USER_ID))
                     .isInstanceOf(AlreadyExistsException.class)
                     .hasMessageContaining(NAME);
 
@@ -162,7 +162,7 @@ class ProductServiceTest {
             doNothing().when(validationUtils).validateRequiredString(any());
             when(categoryService.findActiveCategoryById(CATEGORY_ID)).thenThrow(new NotFoundException("Category not found"));
 
-            assertThatThrownBy(() -> productService.createProduct(request))
+            assertThatThrownBy(() -> productService.createProduct(request, USER_ID))
                     .isInstanceOf(NotFoundException.class);
 
             verify(productRepository, never()).save(any(Product.class));
@@ -175,9 +175,9 @@ class ProductServiceTest {
 
             doNothing().when(validationUtils).validateRequiredString(any());
             when(categoryService.findActiveCategoryById(CATEGORY_ID)).thenReturn(createCategory());
-            when(storeService.findActiveStoreById(STORE_ID)).thenThrow(new NotFoundException("Store not found"));
+            when(storeService.findActiveStoreByOwner(STORE_ID, USER_ID)).thenThrow(new NotFoundException("Store not found"));
 
-            assertThatThrownBy(() -> productService.createProduct(request))
+            assertThatThrownBy(() -> productService.createProduct(request, USER_ID))
                     .isInstanceOf(NotFoundException.class);
 
             verify(productRepository, never()).save(any(Product.class));
@@ -225,9 +225,9 @@ class ProductServiceTest {
             Stock stock = Stock.builder().id(1L).product(product).quantity(10).reserved(0).build();
             product.setStock(stock);
 
-            when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+            when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.of(product));
 
-            ProductDetailsResponseDto result = productService.getProductDetailsById(PRODUCT_ID);
+            ProductDetailsResponseDto result = productService.getProductDetailsById(PRODUCT_ID, USER_ID);
 
             assertThat(result.id()).isEqualTo(PRODUCT_ID);
             assertThat(result.name()).isEqualTo(NAME);
@@ -238,9 +238,9 @@ class ProductServiceTest {
         @Test
         @DisplayName("Should throw exception when product not found")
         void shouldThrowExceptionWhenProductNotFound() {
-            when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.empty());
+            when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> productService.getProductDetailsById(PRODUCT_ID))
+            assertThatThrownBy(() -> productService.getProductDetailsById(PRODUCT_ID, USER_ID))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining(String.valueOf(PRODUCT_ID));
         }
@@ -262,12 +262,12 @@ class ProductServiceTest {
             Category newCategory = Category.builder().id(2L).displayName("New Category").build();
             Product updatedProduct = createProduct();
 
-            when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(existingProduct));
+            when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.of(existingProduct));
             doNothing().when(validationUtils).validateRequiredString(any());
             when(categoryService.findActiveCategoryById(2L)).thenReturn(newCategory);
             when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
 
-            ProductDetailsResponseDto result = productService.updateProduct(PRODUCT_ID, request);
+            ProductDetailsResponseDto result = productService.updateProduct(PRODUCT_ID, request, USER_ID);
 
             assertThat(result.id()).isEqualTo(PRODUCT_ID);
             assertThat(existingProduct.getName()).isEqualTo("Updated Name");
@@ -282,10 +282,10 @@ class ProductServiceTest {
             Product existingProduct = createProduct();
             UpdateProductRequestDto request = new UpdateProductRequestDto(null, null, null, null);
 
-            when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(existingProduct));
+            when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.of(existingProduct));
             when(productRepository.save(any(Product.class))).thenReturn(existingProduct);
 
-            ProductDetailsResponseDto result = productService.updateProduct(PRODUCT_ID, request);
+            ProductDetailsResponseDto result = productService.updateProduct(PRODUCT_ID, request, USER_ID);
 
             assertThat(result.name()).isEqualTo(NAME);
             assertThat(result.description()).isEqualTo(DESCRIPTION);
@@ -299,11 +299,11 @@ class ProductServiceTest {
         @Test
         @DisplayName("Should throw exception when product not found")
         void shouldThrowExceptionWhenProductNotFound() {
-            when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.empty());
+            when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.empty());
 
             UpdateProductRequestDto request = createUpdateRequest();
 
-            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request))
+            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request, USER_ID))
                     .isInstanceOf(NotFoundException.class);
         }
 
@@ -313,9 +313,9 @@ class ProductServiceTest {
             Product existingProduct = createProduct();
             UpdateProductRequestDto request = new UpdateProductRequestDto(NAME, DESCRIPTION, BigDecimal.valueOf(-1), CATEGORY_ID);
 
-            when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(existingProduct));
+            when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.of(existingProduct));
 
-            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request))
+            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request, USER_ID))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Price");
 
@@ -336,9 +336,9 @@ class ProductServiceTest {
         void shouldDeleteProductSuccessfully() {
             Product product = createProduct();
 
-            when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+            when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.of(product));
 
-            productService.deleteProduct(PRODUCT_ID);
+            productService.deleteProduct(PRODUCT_ID, USER_ID);
 
             verify(productRepository).delete(product);
         }
@@ -346,9 +346,9 @@ class ProductServiceTest {
         @Test
         @DisplayName("Should throw exception when product not found")
         void shouldThrowExceptionWhenProductNotFound() {
-            when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.empty());
+            when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID))
+            assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID, USER_ID))
                     .isInstanceOf(NotFoundException.class);
 
             verify(productRepository, never()).delete(any(Product.class));

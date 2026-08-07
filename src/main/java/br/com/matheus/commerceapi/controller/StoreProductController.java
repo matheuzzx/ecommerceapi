@@ -30,12 +30,12 @@ public class StoreProductController {
     }
 
     @PostMapping
-    @PreAuthorize("@securityService.isStoreOwner(#request.storeId(), #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER')")
     public ResponseEntity<ProductResponseDto> createProduct(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody @Valid CreateProductRequestDto request) {
 
-        ProductResponseDto product = productService.createProduct(request);
+        ProductResponseDto product = productService.createProduct(request, userDetails.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 
@@ -51,56 +51,56 @@ public class StoreProductController {
     }
 
     @GetMapping("/{productId}/details")
-    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER')")
     public ResponseEntity<ProductDetailsResponseDto> getProductDetailsById(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long productId) {
 
-        return ResponseEntity.ok(productService.getProductDetailsById(productId));
+        return ResponseEntity.ok(productService.getProductDetailsById(productId, userDetails.getId()));
     }
 
     @PutMapping("/{productId}")
-    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER')")
     public ResponseEntity<ProductDetailsResponseDto> updateProduct(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long productId,
             @RequestBody @Valid UpdateProductRequestDto  request) {
 
-        ProductDetailsResponseDto product = productService.updateProduct(productId, request);
+        ProductDetailsResponseDto product = productService.updateProduct(productId, request, userDetails.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(product);
     }
 
     @DeleteMapping("/{productId}")
-    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER')")
     public ResponseEntity<Void> deleteProduct(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long productId) {
 
-        productService.deleteProduct(productId);
+        productService.deleteProduct(productId, userDetails.getId());
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{productId}/stock/add")
-    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER')")
     public ResponseEntity<StockResponseDto> addStock(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long productId,
             @RequestBody @Valid UpdateStockRequestDto request) {
 
-        StockResponseDto stock = productService.addStock(productId, request.amount());
+        StockResponseDto stock = productService.addStock(productId, request.amount(), userDetails.getId());
         return ResponseEntity.ok(stock);
     }
 
     @PutMapping("/{productId}/stock/remove")
-    @PreAuthorize("hasRole('STOREOWNER') and @securityService.isProductOwner(#productId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER')")
     public ResponseEntity<StockResponseDto> removeStock(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long productId,
             @RequestBody @Valid UpdateStockRequestDto request) {
 
-        StockResponseDto stock = productService.removeStock(productId, request.amount());
+        StockResponseDto stock = productService.removeStock(productId, request.amount(), userDetails.getId());
         return ResponseEntity.ok(stock);
     }
 }

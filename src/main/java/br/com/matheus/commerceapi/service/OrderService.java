@@ -62,8 +62,8 @@ public class OrderService {
         return OrderResponseDto.fromEntity(savedOrder);
     }
 
-    public OrderResponseDto getOrder(Long orderId) {
-        Order order = findOrderById(orderId);
+    public OrderResponseDto getOrder(Long orderId, Long customerId) {
+        Order order = findOrderByCustomer(orderId, customerId);
 
         return OrderResponseDto.fromEntity(order);
     }
@@ -88,39 +88,27 @@ public class OrderService {
 
     @Transactional
     public OrderResponseDto shipOrder(Long orderId) {
-        Order order = findOrderById(orderId);
+        return ship(findOrderById(orderId));
+    }
 
-        if (order.getStatus() != OrderStatus.PAID) {
-            throw new IllegalStateException("Order must be PAID to be shipped");
-        }
-
-        order.nextStatus();
-        Order savedOrder = orderRepository.save(order);
-
-        log.info("Order shipped: ID {}", orderId);
-
-        return OrderResponseDto.fromEntity(savedOrder);
+    @Transactional
+    public OrderResponseDto shipOrderForStoreOwner(Long orderId, Long storeOwnerId) {
+        return ship(findOrderByStoreOwner(orderId, storeOwnerId));
     }
 
     @Transactional
     public OrderResponseDto deliverOrder(Long orderId) {
-        Order order = findOrderById(orderId);
-
-        if (order.getStatus() != OrderStatus.SHIPPED) {
-            throw new IllegalStateException("Order must be SHIPPED to be delivered");
-        }
-
-        order.nextStatus();
-        Order savedOrder = orderRepository.save(order);
-
-        log.info("Order delivered: ID {}", orderId);
-
-        return OrderResponseDto.fromEntity(savedOrder);
+        return deliver(findOrderById(orderId));
     }
 
     @Transactional
-    public OrderResponseDto cancelOrder(Long orderId) {
-        Order order = findOrderById(orderId);
+    public OrderResponseDto deliverOrderForStoreOwner(Long orderId, Long storeOwnerId) {
+        return deliver(findOrderByStoreOwner(orderId, storeOwnerId));
+    }
+
+    @Transactional
+    public OrderResponseDto cancelOrder(Long orderId, Long customerId) {
+        Order order = findOrderByCustomer(orderId, customerId);
 
         if (!order.canCancel()) {
             throw new IllegalStateException("Order cannot be canceled in status: " + order.getStatus());
@@ -147,6 +135,32 @@ public class OrderService {
         return orders.map(OrderResponseDto::fromEntity);
     }
 
+    private OrderResponseDto ship(Order order) {
+        if (order.getStatus() != OrderStatus.PAID) {
+            throw new IllegalStateException("Order must be PAID to be shipped");
+        }
+
+        order.nextStatus();
+        Order savedOrder = orderRepository.save(order);
+
+        log.info("Order shipped: ID {}", order.getId());
+
+        return OrderResponseDto.fromEntity(savedOrder);
+    }
+
+    private OrderResponseDto deliver(Order order) {
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new IllegalStateException("Order must be SHIPPED to be delivered");
+        }
+
+        order.nextStatus();
+        Order savedOrder = orderRepository.save(order);
+
+        log.info("Order delivered: ID {}", order.getId());
+
+        return OrderResponseDto.fromEntity(savedOrder);
+    }
+
     private void confirmStockReservations(Order order) {
         order.getItems().forEach(item ->
                 stockService.confirmReservation(item.getProduct().getId()));
@@ -159,6 +173,16 @@ public class OrderService {
 
     private Order findOrderById(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order not found with id: " + orderId));
+    }
+
+    private Order findOrderByCustomer(Long orderId, Long customerId) {
+        return orderRepository.findByCustomerIdAndId(customerId, orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found with id: " + orderId));
+    }
+
+    private Order findOrderByStoreOwner(Long orderId, Long storeOwnerId) {
+        return orderRepository.findByStore_StoreOwnerIdAndId(storeOwnerId, orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found with id: " + orderId));
     }
 
     private ShippingAddress findShippingAddress(Long userId, Long addressId) {

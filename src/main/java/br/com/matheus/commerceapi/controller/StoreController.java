@@ -33,33 +33,33 @@ public class StoreController {
     }
 
     @GetMapping("/{storeId}")
-    @PreAuthorize("@securityService.isStoreOwner(#storeId, #userDetails.id) or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STOREOWNER')")
     public ResponseEntity<StoreResponseDto> getStore(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long storeId) {
 
-        StoreResponseDto response = storeService.getStore(storeId);
+        StoreResponseDto response = storeService.getStore(storeId, userDetails.getId());
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{storeId}")
-    @PreAuthorize("@securityService.isStoreOwner(#storeId, #userDetails.id)")
+    @PreAuthorize("hasRole('STOREOWNER')")
     public ResponseEntity<StoreResponseDto> updateStore(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long storeId,
             @RequestBody @Valid UpdateStoreRequestDto request) {
 
-        StoreResponseDto response = storeService.updateStore(storeId, request);
+        StoreResponseDto response = storeService.updateStore(storeId, request, userDetails.getId());
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{storeId}")
-    @PreAuthorize("@securityService.isStoreOwner(#storeId, #userDetails.id) or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STOREOWNER')")
     public ResponseEntity<Void> deleteStore(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long storeId) {
 
-        storeService.deleteStore(storeId);
+        storeService.deleteStore(storeId, userDetails.getId());
         return ResponseEntity.noContent().build();
     }
 

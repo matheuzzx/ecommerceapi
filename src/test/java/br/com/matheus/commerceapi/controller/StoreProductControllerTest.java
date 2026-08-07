@@ -55,7 +55,7 @@ class StoreProductControllerTest {
             ProductDetailsResponseDto response = new ProductDetailsResponseDto(
                     PRODUCT_ID, "Name", "Desc", BigDecimal.TEN, true, null, null, 10, true, null, null);
 
-            when(productService.getProductDetailsById(PRODUCT_ID)).thenReturn(response);
+            when(productService.getProductDetailsById(PRODUCT_ID, USER_ID)).thenReturn(response);
 
             ResponseEntity<ProductDetailsResponseDto> result = productController.getProductDetailsById(userDetails, PRODUCT_ID);
 
@@ -68,7 +68,7 @@ class StoreProductControllerTest {
         void shouldPropagateNotFound() {
             UserDetailsImpl userDetails = createUserDetails();
 
-            when(productService.getProductDetailsById(PRODUCT_ID)).thenThrow(new NotFoundException("Product not found with id: " + PRODUCT_ID));
+            when(productService.getProductDetailsById(PRODUCT_ID, USER_ID)).thenThrow(new NotFoundException("Product not found with id: " + PRODUCT_ID));
 
             assertThatThrownBy(() -> productController.getProductDetailsById(userDetails, PRODUCT_ID))
                     .isInstanceOf(NotFoundException.class)
@@ -92,7 +92,7 @@ class StoreProductControllerTest {
             ProductDetailsResponseDto response = new ProductDetailsResponseDto(
                     PRODUCT_ID, "New Name", "Desc", BigDecimal.TEN, true, null, null, 10, true, null, null);
 
-            when(productService.updateProduct(PRODUCT_ID, request)).thenReturn(response);
+            when(productService.updateProduct(PRODUCT_ID, request, USER_ID)).thenReturn(response);
 
             ResponseEntity<ProductDetailsResponseDto> result = productController.updateProduct(userDetails, PRODUCT_ID, request);
 
@@ -106,7 +106,7 @@ class StoreProductControllerTest {
             UserDetailsImpl userDetails = createUserDetails();
             UpdateProductRequestDto request = new UpdateProductRequestDto("Name", null, null, null);
 
-            when(productService.updateProduct(PRODUCT_ID, request)).thenThrow(new NotFoundException("Product not found with id: " + PRODUCT_ID));
+            when(productService.updateProduct(PRODUCT_ID, request, USER_ID)).thenThrow(new NotFoundException("Product not found with id: " + PRODUCT_ID));
 
             assertThatThrownBy(() -> productController.updateProduct(userDetails, PRODUCT_ID, request))
                     .isInstanceOf(NotFoundException.class)

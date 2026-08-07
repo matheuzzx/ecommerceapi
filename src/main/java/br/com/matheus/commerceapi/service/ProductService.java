@@ -37,12 +37,12 @@ public class ProductService {
     private final StoreService storeService;
 
     @Transactional
-    public ProductResponseDto createProduct(CreateProductRequestDto request) {
+    public ProductResponseDto createProduct(CreateProductRequestDto request, Long userId) {
 
         validateCreateProductRequest(request);
 
         Category category = categoryService.findActiveCategoryById(request.categoryId());
-        Store store = storeService.findActiveStoreById(request.storeId());
+        Store store = storeService.findActiveStoreByOwner(request.storeId(), userId);
 
         validateProductUniqueness(request);
 
@@ -73,13 +73,13 @@ public class ProductService {
         return products.map(ProductResponseDto::fromEntity);
     }
 
-    public ProductDetailsResponseDto getProductDetailsById(Long productId) {
-        Product product = findProductById(productId);
+    public ProductDetailsResponseDto getProductDetailsById(Long productId, Long userId) {
+        Product product = findProductByOwner(productId, userId);
         return ProductDetailsResponseDto.fromEntity(product);
     }
 
-    public ProductDetailsResponseDto updateProduct(Long productId, UpdateProductRequestDto request) {
-        Product product = findProductById(productId);
+    public ProductDetailsResponseDto updateProduct(Long productId, UpdateProductRequestDto request, Long userId) {
+        Product product = findProductByOwner(productId, userId);
 
         if (request.name() != null) {
             validationUtils.validateRequiredString(Map.of("Name", request.name()));
@@ -103,18 +103,18 @@ public class ProductService {
         return ProductDetailsResponseDto.fromEntity(product);
     }
 
-    public void deleteProduct(Long productId) {
-        Product product = findProductById(productId);
+    public void deleteProduct(Long productId, Long userId) {
+        Product product = findProductByOwner(productId, userId);
         productRepository.delete(product);
     }
 
-    public StockResponseDto addStock(Long productId, Integer amount) {
-        findProductById(productId);
+    public StockResponseDto addStock(Long productId, Integer amount, Long userId) {
+        findProductByOwner(productId, userId);
         return StockResponseDto.fromEntity(stockService.addStock(productId, amount));
     }
 
-    public StockResponseDto removeStock(Long productId, Integer amount) {
-        findProductById(productId);
+    public StockResponseDto removeStock(Long productId, Integer amount, Long userId) {
+        findProductByOwner(productId, userId);
         return StockResponseDto.fromEntity(stockService.removeStock(productId, amount));
     }
 
@@ -136,6 +136,11 @@ public class ProductService {
 
     public Product findProductById(Long productId) {
         return productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Product not found with id: " + productId));
+    }
+
+    private Product findProductByOwner(Long productId, Long userId) {
+        return productRepository.findByIdAndStore_StoreOwnerId(productId, userId)
                 .orElseThrow(() -> new NotFoundException("Product not found with id: " + productId));
     }
 
