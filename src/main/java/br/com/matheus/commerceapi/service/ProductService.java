@@ -130,18 +130,27 @@ public class ProductService {
     public ProductDetailsResponseDto getPublicProductDetails(Long productId) {
         Product product = productRepository.findById(productId)
                 .filter(Product::isActive)
-                .orElseThrow(() -> new NotFoundException("Product not found or inactive"));
+                .orElseThrow(() -> {
+                    log.warn("Product not found or inactive: ID {}", productId);
+                    return new NotFoundException("Product not found or inactive");
+                });
         return ProductDetailsResponseDto.fromEntity(product);
     }
 
     public Product findProductById(Long productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new NotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> {
+                    log.warn("Product not found: ID {}", productId);
+                    return new NotFoundException("Product not found with id: " + productId);
+                });
     }
 
     private Product findProductByOwner(Long productId, Long userId) {
         return productRepository.findByIdAndStore_StoreOwnerId(productId, userId)
-                .orElseThrow(() -> new NotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> {
+                    log.warn("Product not found or not owned: ID {}, owner {}", productId, userId);
+                    return new NotFoundException("Product not found with id: " + productId);
+                });
     }
 
     private void validateCreateProductRequest(CreateProductRequestDto request) {
@@ -155,12 +164,14 @@ public class ProductService {
 
     private void validateProductUniqueness(CreateProductRequestDto request) {
         if (productRepository.existsByNameAndStoreId(request.name(), request.storeId())) {
+            log.warn("Product '{}' already exists in store {}", request.name(), request.storeId());
             throw new AlreadyExistsException("Product '" + request.name() + "' already exists in this store");
         }
     }
 
     private void validatePrice(BigDecimal price) {
         if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
+            log.warn("Invalid product price: {}", price);
             throw new IllegalArgumentException("Price must be greater than or equal to zero");
         }
     }

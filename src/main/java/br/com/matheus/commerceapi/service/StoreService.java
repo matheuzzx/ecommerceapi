@@ -92,8 +92,6 @@ public class StoreService {
         User storeOwner = store.getStoreOwner();
         storeOwner.setStore(null);
         storeRepository.delete(store);
-
-        log.info("Store deleted: {} (ID: {})", store.getName(), storeId);
     }
 
     private void validateExistingStore(User user) {
@@ -140,13 +138,19 @@ public class StoreService {
 
     private Store findStoreByOwner(Long storeId, Long userId) {
         return storeRepository.findByIdAndStoreOwnerId(storeId, userId)
-                .orElseThrow(StoreNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("Store not found or not owned: ID {}, owner {}", storeId, userId);
+                    return new StoreNotFoundException();
+                });
     }
 
     public Store findActiveStoreByOwner(Long storeId, Long userId) {
         Store store = findStoreByOwner(storeId, userId);
 
-        if (!store.isActive()) throw new IllegalStateException("Store is not active: " + storeId);
+        if (!store.isActive()) {
+            log.warn("Store is not active: ID {}", storeId);
+            throw new IllegalStateException("Store is not active: " + storeId);
+        }
 
         return store;
     }
@@ -160,13 +164,19 @@ public class StoreService {
 
     public Store findStoreByStoreOwner(Long storeOwnerId) {
         return storeRepository.findByStoreOwnerId(storeOwnerId)
-                .orElseThrow(() -> new NotFoundException("Store not found for user: " + storeOwnerId));
+                .orElseThrow(() -> {
+                    log.warn("Store not found for user: {}", storeOwnerId);
+                    return new NotFoundException("Store not found for user: " + storeOwnerId);
+                });
     }
 
     public Store findActiveStoreById(Long storeId) {
         Store store = findStoreById(storeId);
 
-        if(!store.isActive()) throw new IllegalStateException("Store is not active: " + storeId);
+        if(!store.isActive()) {
+            log.warn("Store is not active: ID {}", storeId);
+            throw new IllegalStateException("Store is not active: " + storeId);
+        }
 
         return store;
     }

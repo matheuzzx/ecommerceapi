@@ -57,8 +57,6 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        log.info("Order created: ID {} for customer {} at store {}", savedOrder.getId(), customerId, store.getId());
-
         return OrderResponseDto.fromEntity(savedOrder);
     }
 
@@ -73,6 +71,7 @@ public class OrderService {
         Order order = findOrderById(orderId);
 
         if (order.getStatus() != OrderStatus.CREATED) {
+            log.warn("Order {} cannot be confirmed: status is {}", orderId, order.getStatus());
             throw new IllegalStateException("Order must be CREATED to be confirmed");
         }
 
@@ -80,8 +79,6 @@ public class OrderService {
         confirmStockReservations(order);
 
         Order savedOrder = orderRepository.save(order);
-
-        log.info("Order confirmed: ID {}", orderId);
 
         return OrderResponseDto.fromEntity(savedOrder);
     }
@@ -111,6 +108,7 @@ public class OrderService {
         Order order = findOrderByCustomer(orderId, customerId);
 
         if (!order.canCancel()) {
+            log.warn("Order {} cannot be canceled: status is {}", orderId, order.getStatus());
             throw new IllegalStateException("Order cannot be canceled in status: " + order.getStatus());
         }
 
@@ -118,8 +116,6 @@ public class OrderService {
         cancelStockReservations(order);
 
         Order savedOrder = orderRepository.save(order);
-
-        log.info("Order canceled: ID {}", orderId);
 
         return OrderResponseDto.fromEntity(savedOrder);
     }
@@ -137,26 +133,24 @@ public class OrderService {
 
     private OrderResponseDto ship(Order order) {
         if (order.getStatus() != OrderStatus.PAID) {
+            log.warn("Order {} cannot be shipped: status is {}", order.getId(), order.getStatus());
             throw new IllegalStateException("Order must be PAID to be shipped");
         }
 
         order.nextStatus();
         Order savedOrder = orderRepository.save(order);
 
-        log.info("Order shipped: ID {}", order.getId());
-
         return OrderResponseDto.fromEntity(savedOrder);
     }
 
     private OrderResponseDto deliver(Order order) {
         if (order.getStatus() != OrderStatus.SHIPPED) {
+            log.warn("Order {} cannot be delivered: status is {}", order.getId(), order.getStatus());
             throw new IllegalStateException("Order must be SHIPPED to be delivered");
         }
 
         order.nextStatus();
         Order savedOrder = orderRepository.save(order);
-
-        log.info("Order delivered: ID {}", order.getId());
 
         return OrderResponseDto.fromEntity(savedOrder);
     }
@@ -172,17 +166,26 @@ public class OrderService {
     }
 
     private Order findOrderById(Long orderId) {
-        return orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order not found with id: " + orderId));
+        return orderRepository.findById(orderId).orElseThrow(() -> {
+            log.warn("Order not found: ID {}", orderId);
+            return new NotFoundException("Order not found with id: " + orderId);
+        });
     }
 
     private Order findOrderByCustomer(Long orderId, Long customerId) {
         return orderRepository.findByCustomerIdAndId(customerId, orderId)
-                .orElseThrow(() -> new NotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> {
+                    log.warn("Order not found or not owned: ID {}, customer {}", orderId, customerId);
+                    return new NotFoundException("Order not found with id: " + orderId);
+                });
     }
 
     private Order findOrderByStoreOwner(Long orderId, Long storeOwnerId) {
         return orderRepository.findByStore_StoreOwnerIdAndId(storeOwnerId, orderId)
-                .orElseThrow(() -> new NotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> {
+                    log.warn("Order not found or not owned: ID {}, storeOwner {}", orderId, storeOwnerId);
+                    return new NotFoundException("Order not found with id: " + orderId);
+                });
     }
 
     private ShippingAddress findShippingAddress(Long userId, Long addressId) {
@@ -195,9 +198,11 @@ public class OrderService {
         Product product = productService.findProductById(itemRequest.productId());
 
         if (!product.getStore().getId().equals(store.getId())) {
+            log.warn("Product {} does not belong to store {}", product.getId(), store.getId());
             throw new IllegalArgumentException("Product " + product.getId() + " does not belong to store " + store.getId());
         }
         if (!product.isActive()) {
+            log.warn("Product {} is not active", product.getId());
             throw new IllegalArgumentException("Product " + product.getId() + " is not active");
         }
 

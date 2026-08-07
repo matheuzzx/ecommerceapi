@@ -38,8 +38,6 @@ public class AddressService {
 
         Address savedAddress = addressRepository.save(address);
 
-        log.info("Address created: ID {} for user {}", savedAddress.getId(), userId);
-
         return AddressResponseDto.fromEntity(savedAddress);
     }
 
@@ -72,8 +70,6 @@ public class AddressService {
 
         Address updatedAddress = addressRepository.save(address);
 
-        log.info("Address updated: ID {}", addressId);
-
         return AddressResponseDto.fromEntity(updatedAddress);
     }
 
@@ -81,12 +77,13 @@ public class AddressService {
     public void deleteAddress(Long userId, Long addressId) {
         Address address = findAddressByIdAndUser(addressId, userId);
         addressRepository.delete(address);
-
-        log.info("Address deleted: ID {}", addressId);
     }
 
     public Address findAddressByIdAndUser(Long addressId, Long userId) {
         return addressRepository.findByIdAndUserId(addressId, userId)
-                .orElseThrow(() -> new NotFoundException("Address not found with id: " + addressId));
+                .orElseThrow(() -> {
+                    log.warn("Address not found or not owned: ID {}, user {}", addressId, userId);
+                    return new NotFoundException("Address not found with id: " + addressId);
+                });
     }
 }

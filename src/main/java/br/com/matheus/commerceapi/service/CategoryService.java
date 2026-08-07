@@ -83,23 +83,17 @@ public class CategoryService {
         Category category = findCategoryById(categoryId);
         category.deactivate();
         categoryRepository.save(category);
-
-        log.info("Category deactivated: {} (ID: {})", category.getName(), categoryId);
     }
 
     public void activateCategory(Long categoryId) {
         Category category = findCategoryById(categoryId);
         category.activate();
         categoryRepository.save(category);
-
-        log.info("Category activated: {} (ID: {})", category.getName(), categoryId); //
     }
 
     public void deleteCategory(Long categoryId) {
         Category category = findCategoryById(categoryId);
         categoryRepository.delete(category);
-
-        log.info("Category deleted: {} (ID: {})", category.getName(), categoryId); //
     }
 
     public Category findCategoryById(Long categoryId) {
@@ -113,7 +107,10 @@ public class CategoryService {
     public Category findActiveCategoryById(Long categoryId) {
         Category category = findCategoryById(categoryId);
 
-        if(!category.isActive()) throw new IllegalStateException("Category is not active: " + categoryId);
+        if(!category.isActive()) {
+            log.warn("Category is not active: ID {}", categoryId);
+            throw new IllegalStateException("Category is not active: " + categoryId);
+        }
 
         return category;
     }

@@ -21,12 +21,18 @@ public class UserService {
 
     public User findUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("User not found by email: {}", email);
+                    return new UserNotFoundException();
+                });
     }
 
     public User findUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.warn("User not found: ID {}", userId);
+                    return new UserNotFoundException();
+                });
     }
 
     public UserResponseDto updateUser(Long userId, UpdateUserRequestDto request) {
@@ -35,8 +41,6 @@ public class UserService {
         user.setName(request.name());
 
         User savedUser = userRepository.save(user);
-
-        log.info("User updated: {} (ID: {})", savedUser.getName(), userId);
 
         return UserResponseDto.fromEntity(savedUser);
     }

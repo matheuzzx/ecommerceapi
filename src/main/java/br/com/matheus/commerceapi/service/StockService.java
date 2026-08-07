@@ -5,11 +5,13 @@ import br.com.matheus.commerceapi.entity.Stock;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -30,7 +32,10 @@ public class StockService {
 
     public Stock getStockByProductId(Long productId) {
         return stockRepository.findByProductId(productId)
-                .orElseThrow(() -> new NotFoundException("Stock Not Found"));
+                .orElseThrow(() -> {
+                    log.warn("Stock not found for product: {}", productId);
+                    return new NotFoundException("Stock Not Found");
+                });
     }
 
     public Stock addStock(Long productId, Integer amount){
