@@ -86,6 +86,21 @@ public class OrderService {
     }
 
     @Transactional
+    public Order markOrderAsPaid(Long orderId, Long customerId) {
+        Order order = findOrderByCustomer(orderId, customerId);
+
+        if (order.getStatus() != OrderStatus.CREATED) {
+            log.warn("Order {} cannot be paid: status is {}", orderId, order.getStatus());
+            throw new ConflictException("Order must be CREATED to be paid");
+        }
+
+        order.nextStatus();
+        confirmStockReservations(order);
+
+        return orderRepository.save(order);
+    }
+
+    @Transactional
     public OrderResponseDto shipOrder(Long orderId) {
         return ship(findOrderById(orderId));
     }
@@ -174,7 +189,7 @@ public class OrderService {
         });
     }
 
-    private Order findOrderByCustomer(Long orderId, Long customerId) {
+    public Order findOrderByCustomer(Long orderId, Long customerId) {
         return orderRepository.findByCustomerIdAndId(customerId, orderId)
                 .orElseThrow(() -> {
                     log.warn("Order not found or not owned: ID {}, customer {}", orderId, customerId);
