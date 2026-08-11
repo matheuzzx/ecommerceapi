@@ -15,6 +15,15 @@ spring:
       init:
         mode: always
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true
+
 jwt:
   secret: dGhpcy1pcy1hLXNlY3JldC1rZXktd2l0aC0zMi1ieXRlcy1mb3Itand0LWNvcnJlY3QteWVz
   expiration: 86400000
