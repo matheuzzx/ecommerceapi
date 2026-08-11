@@ -2,6 +2,7 @@ package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.payment.CreatePaymentRequestDto;
 import br.com.matheus.commerceapi.dto.response.payment.PaymentResponseDto;
+import br.com.matheus.commerceapi.docs.controller.PaymentApi;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.PaymentService;
 import jakarta.validation.Valid;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/payments")
-public class PaymentController {
+public class PaymentController implements PaymentApi {
 
     private final PaymentService paymentService;
 

@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
+import br.com.matheus.commerceapi.docs.controller.StoreOrderApi;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.OrderService;
 import org.springframework.data.domain.Page;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/stores/my/orders")
-public class StoreOrderController {
+public class StoreOrderController implements StoreOrderApi {
 
     private final OrderService orderService;
 

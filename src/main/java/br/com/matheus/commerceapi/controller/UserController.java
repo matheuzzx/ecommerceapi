@@ -2,6 +2,7 @@ package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.user.UpdateUserRequestDto;
 import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
+import br.com.matheus.commerceapi.docs.controller.UserApi;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.UserService;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
-public class UserController {
+public class UserController implements UserApi {
 
     private final UserService userService;
 

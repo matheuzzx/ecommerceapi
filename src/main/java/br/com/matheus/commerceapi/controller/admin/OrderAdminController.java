@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.controller.admin;
 
 import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
+import br.com.matheus.commerceapi.docs.controller.OrderAdminApi;
 import br.com.matheus.commerceapi.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin/orders")
-public class OrderAdminController {
+public class OrderAdminController implements OrderAdminApi {
 
     private final OrderService orderService;
 

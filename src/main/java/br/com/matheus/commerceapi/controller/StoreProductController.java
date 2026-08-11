@@ -6,6 +6,7 @@ import br.com.matheus.commerceapi.dto.request.product.UpdateStockRequestDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
 import br.com.matheus.commerceapi.dto.response.stock.StockResponseDto;
+import br.com.matheus.commerceapi.docs.controller.StoreProductApi;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.ProductService;
 import jakarta.validation.Valid;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/stores/my/products")
-public class StoreProductController {
+public class StoreProductController implements StoreProductApi {
 
     private final ProductService productService;
 

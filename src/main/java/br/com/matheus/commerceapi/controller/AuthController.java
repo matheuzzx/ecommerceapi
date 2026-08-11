@@ -4,6 +4,7 @@ import br.com.matheus.commerceapi.dto.request.auth.LoginRequestDto;
 import br.com.matheus.commerceapi.dto.request.auth.RegisterUserRequestDto;
 import br.com.matheus.commerceapi.dto.response.auth.TokenResponseDto;
 import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
+import br.com.matheus.commerceapi.docs.controller.AuthApi;
 import br.com.matheus.commerceapi.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
-public class AuthController {
+public class AuthController implements AuthApi {
 
     private final AuthService authService;
 

@@ -2,6 +2,7 @@ package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.order.CreateOrderRequestDto;
 import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
+import br.com.matheus.commerceapi.docs.controller.OrderApi;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.OrderService;
 import jakarta.validation.Valid;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/orders")
-public class OrderController {
+public class OrderController implements OrderApi {
 
     private final OrderService orderService;
 

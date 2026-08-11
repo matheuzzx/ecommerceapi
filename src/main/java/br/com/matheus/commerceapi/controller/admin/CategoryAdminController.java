@@ -3,6 +3,7 @@ package br.com.matheus.commerceapi.controller.admin;
 import br.com.matheus.commerceapi.dto.request.category.CreateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.request.category.UpdateCategoryRequestDto;
 import br.com.matheus.commerceapi.dto.response.category.CategoryResponseDto;
+import br.com.matheus.commerceapi.docs.controller.CategoryAdminApi;
 import br.com.matheus.commerceapi.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin/categories")
-public class CategoryAdminController {
+public class CategoryAdminController implements CategoryAdminApi {
 
     private final CategoryService categoryService;
 

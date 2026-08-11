@@ -3,6 +3,7 @@ package br.com.matheus.commerceapi.controller;
 import br.com.matheus.commerceapi.dto.request.address.CreateAddressRequestDto;
 import br.com.matheus.commerceapi.dto.request.address.UpdateAddressRequestDto;
 import br.com.matheus.commerceapi.dto.response.address.AddressResponseDto;
+import br.com.matheus.commerceapi.docs.controller.AddressApi;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.AddressService;
 import jakarta.validation.Valid;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users/me/addresses")
-public class AddressController {
+public class AddressController implements AddressApi {
 
     private final AddressService addressService;
 

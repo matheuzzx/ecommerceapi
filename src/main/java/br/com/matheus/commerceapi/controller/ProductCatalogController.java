@@ -2,6 +2,7 @@ package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductResponseDto;
+import br.com.matheus.commerceapi.docs.controller.ProductCatalogApi;
 import br.com.matheus.commerceapi.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/products")
-public class ProductCatalogController {
+public class ProductCatalogController implements ProductCatalogApi {
 
     private final ProductService productService;
 

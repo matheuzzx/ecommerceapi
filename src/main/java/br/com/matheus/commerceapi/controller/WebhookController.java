@@ -1,6 +1,7 @@
 package br.com.matheus.commerceapi.controller;
 
 import br.com.matheus.commerceapi.dto.request.payment.WebhookPaymentEventDto;
+import br.com.matheus.commerceapi.docs.controller.WebhookApi;
 import br.com.matheus.commerceapi.exception.InvalidArgumentException;
 import br.com.matheus.commerceapi.service.PaymentService;
 import br.com.matheus.commerceapi.utils.WebhookSignatureUtils;
@@ -14,7 +15,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/webhooks")
-public class WebhookController {
+public class WebhookController implements WebhookApi {
 
     private final PaymentService paymentService;
     private final WebhookSignatureUtils signatureUtils;
