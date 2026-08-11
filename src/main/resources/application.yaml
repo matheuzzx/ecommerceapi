@@ -19,6 +19,10 @@ jwt:
   secret: dGhpcy1pcy1hLXNlY3JldC1rZXktd2l0aC0zMi1ieXRlcy1mb3Itand0LWNvcnJlY3QteWVz
   expiration: 86400000
 
+payment:
+  webhook-secret: webhook-secret-simulado
+  checkout-url: http://localhost:8080/checkout
+
 app:
   admin:
     auto-create: true
