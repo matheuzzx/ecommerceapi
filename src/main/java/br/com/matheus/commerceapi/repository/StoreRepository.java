@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.repository;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.entity.User;
@@ -15,5 +16,5 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     Optional<Store> findByIdAndStoreOwnerId(Long id, Long storeOwnerId);
     boolean existsByStoreOwner(User user);
     Optional<Store> findByStoreOwnerId(Long userId);
-    boolean existsByEmail(String email);
+    boolean existsByEmail(Email email);
 }

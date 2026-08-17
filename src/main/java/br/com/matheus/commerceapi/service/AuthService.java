@@ -33,18 +33,18 @@ public class AuthService {
 
         Map<String, String> fields = new HashMap<>();
         fields.put("Name", request.name());
-        fields.put("Email", request.email());
+        fields.put("Email", request.email() == null ? null : request.email().value());
         fields.put("Password", request.password());
         fields.put("Role", request.role());
 
         validationUtils.validateRequiredString(fields);
 
-        String validatedEmail = validateAndTrimEmail(request.email());
+        userService.validateUniqueEmail(request.email());
         UserRole role = validateAndGetRole(request.role());
 
         User user = User.builder()
                 .name(request.name())
-                .email(validatedEmail)
+                .email(request.email())
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .userRole(role)
                 .build();
@@ -62,17 +62,15 @@ public class AuthService {
     public TokenResponseDto login(LoginRequestDto request) {
 
         Map<String, String> fields = new HashMap<>();
-        fields.put("Email", request.email());
+        fields.put("Email", request.email() == null ? null : request.email().value());
         fields.put("Password", request.password());
 
         validationUtils.validateRequiredString(fields);
 
-        String trimmedEmail = request.email().trim();
-
-        User user = userService.findUserByEmail(trimmedEmail);
+        User user = userService.findUserByEmail(request.email());
         validatePassword(request.password(), user.getPasswordHash());
 
-        String token = jwtService.generateToken(trimmedEmail, user.getUserRole().toString());
+        String token = jwtService.generateToken(request.email().value(), user.getUserRole().toString());
 
         return new TokenResponseDto(token);
     }
@@ -98,12 +96,5 @@ public class AuthService {
             log.warn("Invalid role format: {}", roleStr);
             throw new InvalidRoleException("Invalid role. Allowed: CUSTOMER, STOREOWNER");
         }
-    }
-
-    private String validateAndTrimEmail(String email) {
-        String trimmedEmail = email.trim();
-        validationUtils.validateEmailFormat(trimmedEmail);
-        userService.validateUniqueEmail(trimmedEmail);
-        return trimmedEmail;
     }
 }

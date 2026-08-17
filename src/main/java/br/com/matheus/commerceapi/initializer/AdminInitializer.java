@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.initializer;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
 import br.com.matheus.commerceapi.repository.UserRepository;
@@ -45,7 +46,7 @@ public class AdminInitializer implements CommandLineRunner {
         try {
             User admin = User.builder()
                     .name(adminName)
-                    .email(adminEmail)
+                    .email(Email.of(adminEmail))
                     .passwordHash(passwordEncoder.encode(adminPassword))
                     .userRole(UserRole.ADMIN)
                     .build();

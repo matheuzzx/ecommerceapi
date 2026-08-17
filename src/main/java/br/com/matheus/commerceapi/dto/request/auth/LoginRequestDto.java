@@ -1,12 +1,12 @@
 package br.com.matheus.commerceapi.dto.request.auth;
 
-import jakarta.validation.constraints.Email;
+import br.com.matheus.commerceapi.domain.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record LoginRequestDto(
-        @NotBlank(message = "Email is required")
-        @Email(message = "Email must be valid")
-        String email,
+        @NotNull(message = "Email is required")
+        Email email,
 
         @NotBlank(message = "Password is required")
         String password

@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.entity;
 
+import br.com.matheus.commerceapi.domain.Email;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,7 +28,7 @@ public class Store {
     private String slug;
 
     @Column(unique = true ,nullable = false, length = 100)
-    private String email;
+    private Email email;
 
     @Column(nullable = false)
     private boolean active;

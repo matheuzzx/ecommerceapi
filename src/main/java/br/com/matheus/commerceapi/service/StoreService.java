@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.dto.request.store.CreateStoreRequestDto;
 import br.com.matheus.commerceapi.dto.request.store.UpdateStoreRequestDto;
 import br.com.matheus.commerceapi.dto.response.store.StoreResponseDto;
@@ -33,7 +34,7 @@ public class StoreService {
 
         Map<String, String> fields = new HashMap<>();
         fields.put("Name", request.name());
-        fields.put("Email", request.email());
+        fields.put("Email", request.email() == null ? null : request.email().value());
 
         validationUtils.validateRequiredString(fields);
 
@@ -41,7 +42,7 @@ public class StoreService {
 
         validateExistingStore(user);
 
-        String email = validateAndTrimEmail(request.email());
+        validateUniqueEmail(request.email());
 
         String slug = toSlug(request.name());
 
@@ -50,7 +51,7 @@ public class StoreService {
         Store store = Store.builder()
                 .storeOwner(user)
                 .name(request.name())
-                .email(email)
+                .email(request.email())
                 .active(true)
                 .slug(slug)
                 .build();
@@ -99,13 +100,6 @@ public class StoreService {
             log.warn("User already owns a store: {}", user.getEmail());
             throw new StoreAlreadyExists();
         }
-    }
-
-    private String validateAndTrimEmail(String email) {
-        String trimmedEmail = email.trim();
-        validationUtils.validateEmailFormat(trimmedEmail);
-        validateUniqueEmail(trimmedEmail);
-        return trimmedEmail;
     }
 
     private void validateExistingSlug(String slug) {
@@ -181,7 +175,7 @@ public class StoreService {
         return store;
     }
 
-    private void validateUniqueEmail(String email) {
+    private void validateUniqueEmail(Email email) {
         if (storeRepository.existsByEmail(email)) {
             log.warn("Email already exists: {}", email);
             throw new EmailAlreadyExistsException(email);

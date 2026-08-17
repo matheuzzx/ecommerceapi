@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.dto.response.store;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
 import br.com.matheus.commerceapi.entity.Store;
 
@@ -9,7 +10,7 @@ public record StoreResponseDto(
         Long id,
         String name,
         String slug,
-        String email,
+        Email email,
         Boolean active,
         UserResponseDto storeOwner,
         Instant createdAt,

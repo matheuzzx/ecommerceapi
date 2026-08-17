@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.security.service;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.repository.UserRepository;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
@@ -19,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(Email.of(email))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
         return new UserDetailsImpl(user);

@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.dto.request.user.UpdateUserRequestDto;
 import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
 import br.com.matheus.commerceapi.entity.User;
@@ -19,7 +20,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public User findUserByEmail(String email) {
+    public User findUserByEmail(Email email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.warn("User not found by email: {}", email);
@@ -45,7 +46,7 @@ public class UserService {
         return UserResponseDto.fromEntity(savedUser);
     }
 
-    public void validateUniqueEmail(String email) {
+    public void validateUniqueEmail(Email email) {
         if (userRepository.existsByEmail(email)) {
             log.warn("Email already exists: {}", email);
             throw new EmailAlreadyExistsException(email);

@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.entity;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,7 +28,7 @@ public class User {
     private String name;
 
     @Column(nullable = false, unique = true)
-    private String email;
+    private Email email;
 
     @Column(name = "password_hash")
     private String passwordHash;
