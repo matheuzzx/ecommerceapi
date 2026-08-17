@@ -1,11 +1,11 @@
 package br.com.matheus.commerceapi.dto.response.order;
 
+import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.dto.response.store.StoreSummaryDto;
 import br.com.matheus.commerceapi.entity.Order;
 import br.com.matheus.commerceapi.entity.ShippingAddress;
 import br.com.matheus.commerceapi.enums.OrderStatus;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,7 +15,7 @@ public record OrderResponseDto(
         StoreSummaryDto store,
         OrderStatus status,
         LocalDateTime date,
-        BigDecimal total,
+        Money total,
         ShippingAddress shippingAddress,
         List<OrderItemResponseDto> items
 ) {

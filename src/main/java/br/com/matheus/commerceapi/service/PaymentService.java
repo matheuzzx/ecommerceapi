@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.dto.request.payment.CreatePaymentRequestDto;
 import br.com.matheus.commerceapi.dto.request.payment.WebhookPaymentEventDto;
 import br.com.matheus.commerceapi.dto.response.payment.PaymentResponseDto;
@@ -63,7 +64,7 @@ public class PaymentService {
     public PaymentResponseDto handleWebhookEvent(WebhookPaymentEventDto event) {
         Payment payment = findPaymentByTransactionId(event.transactionId());
 
-        if (event.amount().compareTo(payment.getAmount()) != 0) {
+        if (!event.amount().equals(payment.getAmount())) {
             log.warn("Webhook amount mismatch for transaction {}: expected {}, received {}",
                     event.transactionId(), payment.getAmount(), event.amount());
             throw new InvalidArgumentException("Webhook amount does not match payment amount");

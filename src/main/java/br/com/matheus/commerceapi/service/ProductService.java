@@ -10,7 +10,6 @@ import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.exception.AlreadyExistsException;
-import br.com.matheus.commerceapi.exception.InvalidArgumentException;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.ProductRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
@@ -91,7 +90,6 @@ public class ProductService {
             product.setDescription(request.description());
         }
         if (request.price() != null) {
-            validatePrice(request.price());
             product.setPrice(request.price());
         }
         if (request.categoryId() != null) {
@@ -159,21 +157,12 @@ public class ProductService {
         fields.put("Name", request.name());
         fields.put("Description", request.description());
         validationUtils.validateRequiredString(fields);
-
-        validatePrice(request.price());
     }
 
     private void validateProductUniqueness(CreateProductRequestDto request) {
         if (productRepository.existsByNameAndStoreId(request.name(), request.storeId())) {
             log.warn("Product '{}' already exists in store {}", request.name(), request.storeId());
             throw new AlreadyExistsException("Product '" + request.name() + "' already exists in this store");
-        }
-    }
-
-    private void validatePrice(BigDecimal price) {
-        if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
-            log.warn("Invalid product price: {}", price);
-            throw new InvalidArgumentException("Price must be greater than or equal to zero");
         }
     }
 }

@@ -1,11 +1,10 @@
 package br.com.matheus.commerceapi.dto.request.product;
 
+import br.com.matheus.commerceapi.domain.Money;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-
-import java.math.BigDecimal;
 
 public record CreateProductRequestDto(
         @NotBlank(message = "Product name is required")
@@ -17,8 +16,7 @@ public record CreateProductRequestDto(
         String description,
 
         @NotNull(message = "Price is required")
-        @Positive(message = "Price must be greater than zero")
-        BigDecimal price,
+        Money price,
 
         @NotNull(message = "Category is required")
         Long categoryId,

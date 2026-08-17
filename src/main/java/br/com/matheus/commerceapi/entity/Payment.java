@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.entity;
 
+import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.enums.PaymentMethod;
 import br.com.matheus.commerceapi.enums.PaymentStatus;
 import jakarta.persistence.*;
@@ -37,7 +38,7 @@ public class Payment {
     private PaymentStatus status;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
+    private Money amount;
 
     @Column(name = "transaction_id", nullable = false, unique = true, length = 64)
     private String transactionId;

@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.dto.request.payment;
 
+import br.com.matheus.commerceapi.domain.Money;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
@@ -8,7 +9,7 @@ public record WebhookPaymentEventDto(
         @NotNull String eventId,
         @NotNull String eventType,
         @NotNull String transactionId,
-        @NotNull BigDecimal amount
+        @NotNull Money amount
 ) {
     public static final String EVENT_SUCCEEDED = "payment.succeeded";
     public static final String EVENT_FAILED = "payment.failed";

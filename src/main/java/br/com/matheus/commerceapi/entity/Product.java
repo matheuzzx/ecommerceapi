@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.entity;
 
+import br.com.matheus.commerceapi.domain.Money;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -29,7 +30,7 @@ public class Product {
     private String description;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    private Money price;
 
     @Column(nullable = false)
     private boolean active;

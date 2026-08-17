@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.entity;
 
+import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.enums.OrderStatus;
 import br.com.matheus.commerceapi.exception.ConflictException;
 import jakarta.persistence.*;
@@ -42,7 +43,7 @@ public class Order {
     private LocalDateTime date;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal total;
+    private Money total;
 
     @Embedded
     private ShippingAddress shippingAddress;

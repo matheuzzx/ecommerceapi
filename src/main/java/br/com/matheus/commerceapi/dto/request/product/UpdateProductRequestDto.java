@@ -1,10 +1,8 @@
 package br.com.matheus.commerceapi.dto.request.product;
 
+import br.com.matheus.commerceapi.domain.Money;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-
-import java.math.BigDecimal;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record UpdateProductRequestDto(
@@ -14,8 +12,7 @@ public record UpdateProductRequestDto(
         @Size(max = 2000, message = "Description must be less than 2000 characters")
         String description,
 
-        @Positive(message = "Price must be greater than zero")
-        BigDecimal price,
+        Money price,
 
         Long categoryId
 ) {}

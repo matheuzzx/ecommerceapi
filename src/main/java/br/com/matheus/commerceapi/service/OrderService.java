@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.dto.request.order.CreateOrderRequestDto;
 import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
 import br.com.matheus.commerceapi.entity.*;
@@ -43,9 +44,9 @@ public class OrderService {
                 .map(item -> buildOrderItem(store, item))
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        BigDecimal total = orderItems.stream()
+        Money total = orderItems.stream()
                 .map(OrderItem::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(Money.zero(), Money::add);
 
         Order order = Order.builder()
                 .customer(customer)

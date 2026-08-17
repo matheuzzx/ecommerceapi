@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.entity;
 
+import br.com.matheus.commerceapi.domain.Money;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -33,7 +34,7 @@ public class OrderItem {
     private Integer quantity;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal unitPrice;
+    private Money unitPrice;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -43,7 +44,7 @@ public class OrderItem {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    public BigDecimal getSubtotal() {
-        return unitPrice.multiply(BigDecimal.valueOf(quantity));
+    public Money getSubtotal() {
+        return unitPrice.multiply(quantity);
     }
 }

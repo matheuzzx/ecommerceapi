@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.dto.response.payment;
 
+import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.entity.Payment;
 import br.com.matheus.commerceapi.enums.PaymentMethod;
 import br.com.matheus.commerceapi.enums.PaymentStatus;
@@ -12,7 +13,7 @@ public record PaymentResponseDto(
         Long orderId,
         PaymentMethod method,
         PaymentStatus status,
-        BigDecimal amount,
+        Money amount,
         String transactionId,
         String checkoutUrl,
         LocalDateTime paidAt
