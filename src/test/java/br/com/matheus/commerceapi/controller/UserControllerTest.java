@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.controller;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.dto.request.user.UpdateUserRequestDto;
 import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
 import br.com.matheus.commerceapi.entity.User;
@@ -44,7 +45,7 @@ class UserControllerTest {
         User user = User.builder()
                 .id(USER_ID)
                 .name("John")
-                .email("john@example.com")
+                .email(Email.of("john@example.com"))
                 .userRole(UserRole.CUSTOMER)
                 .build();
 
@@ -76,7 +77,7 @@ class UserControllerTest {
         User updatedUser = User.builder()
                 .id(USER_ID)
                 .name("New Name")
-                .email("john@example.com")
+                .email(Email.of("john@example.com"))
                 .userRole(UserRole.CUSTOMER)
                 .build();
 

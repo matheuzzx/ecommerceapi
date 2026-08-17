@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.controller;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.dto.request.auth.LoginRequestDto;
 import br.com.matheus.commerceapi.dto.request.auth.RegisterUserRequestDto;
 import br.com.matheus.commerceapi.dto.response.auth.TokenResponseDto;
@@ -33,7 +34,7 @@ class AuthControllerTest {
     private AuthController authController;
 
     private static final String NAME = "User";
-    private static final String EMAIL = "user@email.com";
+    private static final Email EMAIL = Email.of("user@email.com");
     private static final String PASSWORD = "password";
     private static final String ROLE = "CUSTOMER";
     private static final String TOKEN = "jwt.token.here";

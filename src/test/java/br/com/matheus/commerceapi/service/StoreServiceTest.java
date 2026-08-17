@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.dto.request.store.CreateStoreRequestDto;
 import br.com.matheus.commerceapi.dto.request.store.UpdateStoreRequestDto;
 import br.com.matheus.commerceapi.dto.response.store.StoreResponseDto;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -52,7 +54,7 @@ public class StoreServiceTest {
     private static final Long USER_ID = 1L;
     private static final Long STORE_ID = 1L;
     private static final String NAME = "Minha Loja";
-    private static final String EMAIL = "loja@email.com";
+    private static final Email EMAIL = Email.of("loja@email.com");
     private static final String SLUG = "Minha_Loja";
     private static final String UPDATED_NAME = "Nova Loja";
 
@@ -168,13 +170,11 @@ public class StoreServiceTest {
             void shouldTrimEmailBeforeValidation() {
                 // Arrange
                 String emailWithSpaces = "  loja@email.com  ";
-                String trimmedEmail = "loja@email.com";
-                CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, emailWithSpaces);
+                CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, Email.of(emailWithSpaces));
                 User user = createValidStoreOwner();
 
                 mockUserValidation(user);
                 doNothing().when(validationUtils).validateRequiredString(any());
-                doNothing().when(validationUtils).validateEmailFormat(trimmedEmail);
                 when(storeRepository.existsBySlug(SLUG)).thenReturn(false);
                 when(storeRepository.save(any(Store.class))).thenReturn(createStore(user));
 
@@ -182,10 +182,9 @@ public class StoreServiceTest {
                 storeService.createStore(request, USER_ID);
 
                 // Assert
-                verify(validationUtils).validateEmailFormat(trimmedEmail);
                 ArgumentCaptor<Store> storeCaptor = ArgumentCaptor.forClass(Store.class);
                 verify(storeRepository).save(storeCaptor.capture());
-                assertThat(storeCaptor.getValue().getEmail()).isEqualTo(trimmedEmail);
+                assertThat(storeCaptor.getValue().getEmail()).isEqualTo(Email.of("loja@email.com"));
             }
         }
 
@@ -214,10 +213,9 @@ public class StoreServiceTest {
             }
 
             @ParameterizedTest
-            @NullAndEmptySource
-            @ValueSource(strings = {" ", "  ", "\t"})
+            @NullSource
             @DisplayName("Should throw exception when email is invalid")
-            void shouldThrowExceptionWhenEmailIsInvalid(String invalidEmail) {
+            void shouldThrowExceptionWhenEmailIsInvalid(Email invalidEmail) {
                 // Arrange
                 CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, invalidEmail);
 
@@ -234,21 +232,9 @@ public class StoreServiceTest {
             @Test
             @DisplayName("Should throw exception when email format is invalid")
             void shouldThrowExceptionWhenEmailFormatIsInvalid() {
-                // Arrange
-                String invalidEmail = "invalid_email";
-                CreateStoreRequestDto request = new CreateStoreRequestDto(NAME, invalidEmail);
-                User user = createValidStoreOwner();
-
-                when(userService.findUserById(USER_ID)).thenReturn(user);
-                when(storeRepository.existsByStoreOwner(user)).thenReturn(false);
-                doNothing().when(validationUtils).validateRequiredString(any());
-                doThrow(new IllegalArgumentException("Email is not valid"))
-                        .when(validationUtils).validateEmailFormat(invalidEmail.trim());
-
                 // Act & Assert
-                assertThatThrownBy(() -> storeService.createStore(request, USER_ID))
-                        .isInstanceOf(IllegalArgumentException.class)
-                        .hasMessage("Email is not valid");
+                assertThatThrownBy(() -> new CreateStoreRequestDto(NAME, Email.of("invalid_email")))
+                        .isInstanceOf(IllegalArgumentException.class);
 
                 verify(storeRepository, never()).save(any(Store.class));
             }
@@ -322,7 +308,6 @@ public class StoreServiceTest {
                 when(userService.findUserById(USER_ID)).thenReturn(user);
                 when(storeRepository.existsByStoreOwner(user)).thenReturn(false);
                 doNothing().when(validationUtils).validateRequiredString(any());
-                doNothing().when(validationUtils).validateEmailFormat(EMAIL.trim());
                 when(storeRepository.existsBySlug(SLUG)).thenReturn(true);
 
                 // Act & Assert
@@ -513,7 +498,7 @@ public class StoreServiceTest {
         return User.builder()
                 .id(USER_ID)
                 .name("User Name")
-                .email("user@email.com")
+                .email(Email.of("user@email.com"))
                 .passwordHash("hashed")
                 .userRole(UserRole.STOREOWNER)
                 .store(null)
@@ -524,7 +509,7 @@ public class StoreServiceTest {
         return User.builder()
                 .id(USER_ID)
                 .name("User Name")
-                .email("user@email.com")
+                .email(Email.of("user@email.com"))
                 .passwordHash("hashed")
                 .userRole(role)
                 .store(null)
@@ -560,7 +545,6 @@ public class StoreServiceTest {
 
     private void mockValidationPass() {
         doNothing().when(validationUtils).validateRequiredString(any());
-        doNothing().when(validationUtils).validateEmailFormat(any());
     }
 
     private void assertResponse(StoreResponseDto response) {

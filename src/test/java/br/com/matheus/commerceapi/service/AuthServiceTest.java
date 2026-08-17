@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.domain.Email;
 import br.com.matheus.commerceapi.dto.request.auth.LoginRequestDto;
 import br.com.matheus.commerceapi.dto.request.auth.RegisterUserRequestDto;
 import br.com.matheus.commerceapi.dto.response.auth.TokenResponseDto;
@@ -54,7 +55,7 @@ class AuthServiceTest {
     private AuthService authService;
 
     private static final String NAME = "name";
-    private static final String EMAIL = "email@email.com";
+    private static final Email EMAIL = Email.of("email@email.com");
     private static final String PASSWORD = "password";
     private static final String HASHED = "hashed";
     private static final String TOKEN = "token";
@@ -125,16 +126,8 @@ class AuthServiceTest {
             @Test
             @DisplayName("Should throw exception when email format is invalid")
             void shouldThrowExceptionWhenEmailIsInvalid() {
-                // Arrange
-                String invalidEmail = "invalid_email";
-                RegisterUserRequestDto request = new RegisterUserRequestDto(NAME, invalidEmail, PASSWORD, "CUSTOMER");
-
-                doNothing().when(validationUtils).validateRequiredString(any());
-                doThrow(new IllegalArgumentException("Email is not valid"))
-                        .when(validationUtils).validateEmailFormat(invalidEmail);
-
-                // Act & Assert
-                assertThatThrownBy(() -> authService.register(request))
+                // Arrange & Act & Assert
+                assertThatThrownBy(() -> new RegisterUserRequestDto(NAME, Email.of("invalid_email"), PASSWORD, "CUSTOMER"))
                         .isInstanceOf(IllegalArgumentException.class);
 
                 verify(userService, never()).saveUser(any(User.class));
@@ -148,7 +141,7 @@ class AuthServiceTest {
                 // Arrange
                 RegisterUserRequestDto request = new RegisterUserRequestDto(
                         fieldName.equals("name") ? invalidValue : NAME,
-                        fieldName.equals("email") ? invalidValue : EMAIL,
+                        fieldName.equals("email") ? null : EMAIL,
                         fieldName.equals("password") ? invalidValue : PASSWORD,
                         "CUSTOMER"
                 );
@@ -169,9 +162,6 @@ class AuthServiceTest {
                         Arguments.of("name", "   "),
                         Arguments.of("name", "\t"),
                         Arguments.of("email", null),
-                        Arguments.of("email", ""),
-                        Arguments.of("email", "   "),
-                        Arguments.of("email", "\t"),
                         Arguments.of("password", null),
                         Arguments.of("password", ""),
                         Arguments.of("password", "   "),
@@ -244,7 +234,7 @@ class AuthServiceTest {
                 
                 when(userService.findUserByEmail(EMAIL)).thenReturn(user);
                 when(passwordEncoder.matches(PASSWORD, HASHED)).thenReturn(true);
-                when(jwtService.generateToken(EMAIL, "CUSTOMER")).thenReturn(TOKEN);
+                when(jwtService.generateToken(EMAIL.value(), "CUSTOMER")).thenReturn(TOKEN);
 
                 // Act
                 TokenResponseDto response = authService.login(request);
@@ -266,7 +256,7 @@ class AuthServiceTest {
             void shouldThrowExceptionWhenLoginFieldIsInvalid(String fieldName, String invalidValue) {
                 // Arrange
                 LoginRequestDto request = new LoginRequestDto(
-                        fieldName.equals("email") ? invalidValue : EMAIL,
+                        fieldName.equals("email") ? null : EMAIL,
                         fieldName.equals("password") ? invalidValue : PASSWORD
                 );
 
@@ -276,16 +266,13 @@ class AuthServiceTest {
                 // Act & Assert
                 assertThrows(IllegalArgumentException.class, () -> authService.login(request));
 
-                verify(userService, never()).findUserByEmail(anyString());
+                verify(userService, never()).findUserByEmail(any(Email.class));
                 verify(passwordEncoder, never()).matches(anyString(), anyString());
             }
 
             private static Stream<Arguments> invalidLoginFieldsProvider() {
                 return Stream.of(
                         Arguments.of("email", null),
-                        Arguments.of("email", ""),
-                        Arguments.of("email", "   "),
-                        Arguments.of("email", "\t"),
                         Arguments.of("password", null),
                         Arguments.of("password", ""),
                         Arguments.of("password", "   "),
@@ -349,7 +336,6 @@ class AuthServiceTest {
 
     private void mockValidationPass() {
         doNothing().when(validationUtils).validateRequiredString(any());
-        doNothing().when(validationUtils).validateEmailFormat(any());
     }
 
     private void assertResponse(UserResponseDto response, String expectedRole) {
@@ -362,6 +348,6 @@ class AuthServiceTest {
     private void verifyNoInteractionsWithRepository() {
         verify(userService, never()).saveUser(any(User.class));
         verify(passwordEncoder, never()).encode(anyString());
-        verify(userService, never()).validateUniqueEmail(anyString());
+        verify(userService, never()).validateUniqueEmail(any(Email.class));
     }
 }
