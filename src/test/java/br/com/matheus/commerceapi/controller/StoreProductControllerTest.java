@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.controller;
 
+import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.dto.request.product.UpdateProductRequestDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
 import br.com.matheus.commerceapi.entity.User;
@@ -53,7 +54,7 @@ class StoreProductControllerTest {
         void shouldReturnProductDetails() {
             UserDetailsImpl userDetails = createUserDetails();
             ProductDetailsResponseDto response = new ProductDetailsResponseDto(
-                    PRODUCT_ID, "Name", "Desc", BigDecimal.TEN, true, null, null, 10, true, null, null);
+                    PRODUCT_ID, "Name", "Desc", Money.of(BigDecimal.TEN), true, null, null, 10, true, null, null);
 
             when(productService.getProductDetailsById(PRODUCT_ID, USER_ID)).thenReturn(response);
 
@@ -90,7 +91,7 @@ class StoreProductControllerTest {
             UserDetailsImpl userDetails = createUserDetails();
             UpdateProductRequestDto request = new UpdateProductRequestDto("New Name", null, null, null);
             ProductDetailsResponseDto response = new ProductDetailsResponseDto(
-                    PRODUCT_ID, "New Name", "Desc", BigDecimal.TEN, true, null, null, 10, true, null, null);
+                    PRODUCT_ID, "New Name", "Desc", Money.of(BigDecimal.TEN), true, null, null, 10, true, null, null);
 
             when(productService.updateProduct(PRODUCT_ID, request, USER_ID)).thenReturn(response);
 

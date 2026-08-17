@@ -60,7 +60,7 @@ class WebhookControllerTest {
         assertThat(event.eventId()).isEqualTo("evt_1");
         assertThat(event.isSuccess()).isTrue();
         assertThat(event.transactionId()).isEqualTo("txn_1");
-        assertThat(event.amount()).isEqualByComparingTo(new BigDecimal("100.00"));
+        assertThat(event.amount().amount()).isEqualByComparingTo(new BigDecimal("100.00"));
     }
 
     @Test

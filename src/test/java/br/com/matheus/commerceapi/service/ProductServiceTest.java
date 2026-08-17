@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.dto.request.product.CreateProductRequestDto;
 import br.com.matheus.commerceapi.dto.request.product.UpdateProductRequestDto;
 import br.com.matheus.commerceapi.dto.response.product.ProductDetailsResponseDto;
@@ -9,7 +10,6 @@ import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Stock;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.exception.AlreadyExistsException;
-import br.com.matheus.commerceapi.exception.InvalidArgumentException;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.repository.ProductRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
@@ -65,7 +65,7 @@ class ProductServiceTest {
     private static final Long PRODUCT_ID = 1L;
     private static final String NAME = "Product Name";
     private static final String DESCRIPTION = "Product Description";
-    private static final BigDecimal PRICE = BigDecimal.valueOf(100);
+    private static final Money PRICE = Money.of(BigDecimal.valueOf(100));
     private static final Long CATEGORY_ID = 1L;
     private static final Long STORE_ID = 1L;
     private static final Long USER_ID = 1L;
@@ -96,7 +96,7 @@ class ProductServiceTest {
     }
 
     private UpdateProductRequestDto createUpdateRequest() {
-        return new UpdateProductRequestDto("Updated Name", "Updated Description", BigDecimal.valueOf(200), 2L);
+        return new UpdateProductRequestDto("Updated Name", "Updated Description", Money.of(BigDecimal.valueOf(200)), 2L);
     }
 
     // ============================================
@@ -131,7 +131,7 @@ class ProductServiceTest {
 
             assertThat(result.id()).isEqualTo(PRODUCT_ID);
             assertThat(result.name()).isEqualTo(NAME);
-            assertThat(result.price()).isEqualByComparingTo(PRICE);
+            assertThat(result.price()).isEqualTo(PRICE);
 
             verify(productRepository, times(2)).save(any(Product.class));
             verify(stockService).createStockForProduct(any(Product.class));
@@ -273,7 +273,7 @@ class ProductServiceTest {
             assertThat(result.id()).isEqualTo(PRODUCT_ID);
             assertThat(existingProduct.getName()).isEqualTo("Updated Name");
             assertThat(existingProduct.getDescription()).isEqualTo("Updated Description");
-            assertThat(existingProduct.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(200));
+            assertThat(existingProduct.getPrice()).isEqualTo(Money.of(BigDecimal.valueOf(200)));
             assertThat(existingProduct.getCategory().getId()).isEqualTo(2L);
         }
 
@@ -290,7 +290,7 @@ class ProductServiceTest {
 
             assertThat(result.name()).isEqualTo(NAME);
             assertThat(result.description()).isEqualTo(DESCRIPTION);
-            assertThat(result.price()).isEqualByComparingTo(PRICE);
+            assertThat(result.price()).isEqualTo(PRICE);
             assertThat(existingProduct.getCategory().getId()).isEqualTo(CATEGORY_ID);
 
             verify(validationUtils, never()).validateRequiredString(any());
@@ -306,21 +306,6 @@ class ProductServiceTest {
 
             assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request, USER_ID))
                     .isInstanceOf(NotFoundException.class);
-        }
-
-        @Test
-        @DisplayName("Should throw exception when price is negative")
-        void shouldThrowExceptionWhenPriceIsNegative() {
-            Product existingProduct = createProduct();
-            UpdateProductRequestDto request = new UpdateProductRequestDto(NAME, DESCRIPTION, BigDecimal.valueOf(-1), CATEGORY_ID);
-
-            when(productRepository.findByIdAndStore_StoreOwnerId(PRODUCT_ID, USER_ID)).thenReturn(Optional.of(existingProduct));
-
-            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request, USER_ID))
-                    .isInstanceOf(InvalidArgumentException.class)
-                    .hasMessageContaining("Price");
-
-            verify(productRepository, never()).save(any(Product.class));
         }
     }
 

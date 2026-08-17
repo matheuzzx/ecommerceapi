@@ -1,5 +1,6 @@
 package br.com.matheus.commerceapi.service;
 
+import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.dto.request.payment.CreatePaymentRequestDto;
 import br.com.matheus.commerceapi.dto.request.payment.WebhookPaymentEventDto;
 import br.com.matheus.commerceapi.dto.response.payment.PaymentResponseDto;
@@ -52,7 +53,7 @@ class PaymentServiceTest {
         return Order.builder()
                 .id(ORDER_ID)
                 .status(OrderStatus.CREATED)
-                .total(new BigDecimal("100.00"))
+                .total(Money.of(new BigDecimal("100.00")))
                 .customer(User.builder().id(USER_ID).build())
                 .build();
     }
@@ -139,7 +140,7 @@ class PaymentServiceTest {
             when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             WebhookPaymentEventDto event = new WebhookPaymentEventDto(
-                    "evt-1", WebhookPaymentEventDto.EVENT_SUCCEEDED, "txn-123", new BigDecimal("100.00"));
+                    "evt-1", WebhookPaymentEventDto.EVENT_SUCCEEDED, "txn-123", Money.of(new BigDecimal("100.00")));
 
             PaymentResponseDto result = paymentService.handleWebhookEvent(event);
 
@@ -156,7 +157,7 @@ class PaymentServiceTest {
             when(paymentRepository.findByTransactionId("txn-123")).thenReturn(Optional.of(payment));
 
             WebhookPaymentEventDto event = new WebhookPaymentEventDto(
-                    "evt-1", WebhookPaymentEventDto.EVENT_FAILED, "txn-123", new BigDecimal("100.00"));
+                    "evt-1", WebhookPaymentEventDto.EVENT_FAILED, "txn-123", Money.of(new BigDecimal("100.00")));
 
             PaymentResponseDto result = paymentService.handleWebhookEvent(event);
 
@@ -174,7 +175,7 @@ class PaymentServiceTest {
             when(paymentRepository.findByTransactionId("txn-123")).thenReturn(Optional.of(payment));
 
             WebhookPaymentEventDto event = new WebhookPaymentEventDto(
-                    "evt-1", WebhookPaymentEventDto.EVENT_SUCCEEDED, "txn-123", new BigDecimal("100.00"));
+                    "evt-1", WebhookPaymentEventDto.EVENT_SUCCEEDED, "txn-123", Money.of(new BigDecimal("100.00")));
 
             PaymentResponseDto result = paymentService.handleWebhookEvent(event);
 
@@ -191,7 +192,7 @@ class PaymentServiceTest {
             when(paymentRepository.findByTransactionId("txn-123")).thenReturn(Optional.of(payment));
 
             WebhookPaymentEventDto event = new WebhookPaymentEventDto(
-                    "evt-1", WebhookPaymentEventDto.EVENT_SUCCEEDED, "txn-123", new BigDecimal("99.00"));
+                    "evt-1", WebhookPaymentEventDto.EVENT_SUCCEEDED, "txn-123", Money.of(new BigDecimal("99.00")));
 
             assertThatThrownBy(() -> paymentService.handleWebhookEvent(event))
                     .isInstanceOf(InvalidArgumentException.class);
@@ -205,7 +206,7 @@ class PaymentServiceTest {
             when(paymentRepository.findByTransactionId("txn-999")).thenReturn(Optional.empty());
 
             WebhookPaymentEventDto event = new WebhookPaymentEventDto(
-                    "evt-1", WebhookPaymentEventDto.EVENT_SUCCEEDED, "txn-999", new BigDecimal("100.00"));
+                    "evt-1", WebhookPaymentEventDto.EVENT_SUCCEEDED, "txn-999", Money.of(new BigDecimal("100.00")));
 
             assertThatThrownBy(() -> paymentService.handleWebhookEvent(event))
                     .isInstanceOf(NotFoundException.class);
