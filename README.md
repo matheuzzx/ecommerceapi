@@ -144,6 +144,7 @@ export APP_ADMIN_AUTO_CREATE=false
 | POST | `/webhooks/payments` | Público (assinado) | Evento da gateway de pagamento |
 | CRUD | `/stores` | `STOREOWNER`/`ADMIN` | Gestão da loja |
 | CRUD | `/stores/my/products` | `STOREOWNER` | Gestão de produtos |
+| GET | `/stores/my/products/{id}/details` | `STOREOWNER` | Detalhes de um produto da própria loja |
 | PUT | `/stores/my/products/{id}/stock/add` / `.../stock/remove` | `STOREOWNER` | Movimentação de estoque |
 | GET / PUT | `/stores/my/orders` + `/ship` `/deliver` | `STOREOWNER` | Pedidos da loja |
 | CRUD | `/admin/categories` | `ADMIN` | Gestão de categorias |
@@ -210,6 +211,7 @@ src/main/java/br/com/matheus/commerceapi
 ├── service/           # Orquestração das regras de negócio + transações
 ├── repository/        # Spring Data JPA
 ├── entity/            # Entidades + regras de domínio
+├── domain/            # Value objects (Money, Email) e converters JPA
 ├── enums/             # OrderStatus, PaymentStatus, PaymentMethod, UserRole
 ├── dto/
 │   ├── request/       # Entrada validada (@Valid)
