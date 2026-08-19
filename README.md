@@ -4,7 +4,7 @@ API REST de e-commerce com multi-loja, catálogo público, gestão de estoque co
 
 Projeto de portfólio que demonstra modelagem de domínio, Spring Boot, Spring Security com JWT, JPA/Hibernate, tratamento de erros, documentação OpenAPI e testes.
 
-**Stack:** Java 25 · Spring Boot 4 · Spring Data JPA · Spring Security · Flyway · SQLite · Springdoc OpenAPI · JUnit 5 + Mockito + AssertJ · Gradle
+**Stack:** Java 25 · Spring Boot 4 · Spring Data JPA · Spring Security · Flyway · PostgreSQL · Springdoc OpenAPI · JUnit 5 + Mockito + AssertJ · Gradle
 
 ---
 
@@ -24,7 +24,15 @@ Projeto de portfólio que demonstra modelagem de domínio, Spring Boot, Spring S
 
 ## Como executar
 
-Pré-requisitos: JDK 25+.
+Pré-requisitos: JDK 25+ e Docker (ou um PostgreSQL 16 local em `localhost:5432`).
+
+Suba o banco:
+
+```bash
+docker compose up -d
+```
+
+Na primeira execução, o Flyway aplica as migrations e o schema é criado automaticamente.
 
 ```bash
 # Linux/macOS
@@ -33,8 +41,6 @@ Pré-requisitos: JDK 25+.
 # Windows
 .\gradlew.bat bootRun
 ```
-
-O banco SQLite é criado automaticamente em `data/app.db` na primeira execução (Flyway aplica a migration).
 
 ### Perfil de demonstração
 
@@ -67,7 +73,7 @@ Todas as propriedades possuem padrões sensatos para ambiente local (`src/main/r
 | `PAYMENT_WEBHOOK_SECRET` | `webhook-secret-simulado` | Segredo usado na verificação da assinatura do webhook |
 | `PAYMENT_CHECKOUT_URL` | `http://localhost:8080/checkout` | URL de checkout exposta no payment |
 | `APP_ADMIN_AUTO_CREATE` | `true` | Cria admin de demonstração |
-| `SPRING_DATASOURCE_URL` | `jdbc:sqlite:./data/app.db` | Conexão do banco |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/ecommerce` | Conexão do banco |
 
 Exemplo:
 
@@ -199,7 +205,7 @@ Os testes cobrem regras de negócio (estoque, pagamento, autenticação, produto
 
 ## Limitações conhecidas (cenário de portfólio)
 
-- **Banco de demonstração**: SQLite é usado por simplicidade local (arquivo único, zero setup). Para produção o projeto deveria usar um banco relacional de verdade (ex.: PostgreSQL) — o desenho JPA migra sem mudança de código.
+- **Banco de demonstração**: PostgreSQL local via `docker compose` (credenciais em `application.yaml`), com o schema versionado por Flyway. Os testes de integração usam Testcontainers e não dependem do banco local.
 - **Concorrência de estoque**: a reserva atual não possui lock otimista/pessimista; em cenário concorrente a solução seria `@Version` ou lock pessimista / SQL atômico.
 - **Expiração de reserva**: reservas de pedidos não pagos não expiram. Em produção, um job periódico deveria liberar reservas após um prazo.
 - **Sem refresh token / revogação**: a autenticação é JWT stateless simples (padrão válido para o escopo).
