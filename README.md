@@ -18,7 +18,7 @@ Projeto de portfólio que demonstra modelagem de domínio, Spring Boot, Spring S
 - **Pagamento por webhook assinado** (HMAC-SHA256), com endpoint de simulação para testes locais.
 - **Agenda de endereços** do cliente, com snapshot do endereço de entrega no pedido (value object embutido).
 - **Documentação interativa** via Swagger UI.
-- **196 testes** automatizados.
+- **223 testes** automatizados (unitários, de controller e de integração com Testcontainers).
 
 ---
 
@@ -59,6 +59,45 @@ Ao iniciar, a aplicação cria de forma automática:
 |---|---|
 | `http://localhost:8080/swagger-ui.html` | Swagger UI |
 | `http://localhost:8080/v3/api-docs` | OpenAPI JSON |
+
+---
+
+## Perfis de execução
+
+A aplicação tem dois perfis; o **padrão (dev)** é usado quando nenhum perfil é informado.
+
+| Perfil | Quando usar | Banco de dados |
+|---|---|---|
+| `(padrão)` | Desenvolvimento local (`bootRun`) | PostgreSQL local em `localhost:5432` (credenciais em `application.yaml`) |
+| `prod` | Produção / deploy | PostgreSQL via variáveis de ambiente (obrigatórias) |
+
+### Como ativar um perfil
+
+**1. Variável de ambiente** (padrão em deploys):
+
+```bash
+# Linux/macOS
+SPRING_PROFILES_ACTIVE=prod ./gradlew bootRun
+
+# Windows (PowerShell)
+$env:SPRING_PROFILES_ACTIVE="prod"; .\gradlew.bat bootRun
+```
+
+**2. Argumento de linha de comando** (tem precedência sobre a variável de ambiente):
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=prod'
+```
+
+**3. IntelliJ IDEA:** *Run/Debug Configurations* → *Environment variables*: `SPRING_PROFILES_ACTIVE=prod` (ou *VM options*: `-Dspring.profiles.active=prod`).
+
+Para conferir o perfil ativo, veja a primeira linha do log de inicialização:
+
+```
+The following 1 profile is active: "prod"
+```
+
+> O arquivo do perfil **mescla** com o `application.yaml` base — ele sobrescreve apenas o que precisa. No `prod`, o datasource e os segredos vêm de env vars (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `JWT_EXPIRATION`, `PAYMENT_WEBHOOK_SECRET`, `PAYMENT_CHECKOUT_URL`) e a aplicação **não inicia** se alguma estiver faltando (fail-fast proposital).
 
 ---
 
@@ -199,7 +238,7 @@ src/main/java/br/com/matheus/commerceapi
 .\gradlew.bat test
 ```
 
-Os testes cobrem regras de negócio (estoque, pagamento, autenticação, produtos), serviços e controllers, com `@Nested`, testes parametrizados, AssertJ e verificação de interações do Mockito.
+Os testes cobrem regras de negócio (estoque, pagamento, autenticação, produtos), serviços e controllers, com `@Nested`, testes parametrizados, AssertJ e verificação de interações do Mockito. Os testes de integração (`integration/`) executam o fluxo de ponta a ponta (pedido → webhook assinado → expedição) e as regras de autorização (401/403/posse) contra um PostgreSQL real via Testcontainers — **requer o Docker em execução**; os demais testes não dependem de banco.
 
 ---
 
