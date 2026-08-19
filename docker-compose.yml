@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecommerce-postgres
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mysecretpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d ecommerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecommerce-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://postgres:5432/ecommerce
+      DB_USERNAME: myuser
+      DB_PASSWORD: mysecretpassword
+      JWT_SECRET: 9f8e7b6a5c4d3e2f1a0b9c8d7e6f5a4b3c2e1f0a9b8c7d6e5f4a3b2c1e0f9a8b
+      JWT_EXPIRATION: 86400000
+      PAYMENT_WEBHOOK_SECRET: webhook-secret-simulado
+      PAYMENT_CHECKOUT_URL: http://localhost:8080/checkout
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
