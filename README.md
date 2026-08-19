@@ -24,34 +24,33 @@ Projeto de portfólio que demonstra modelagem de domínio, Spring Boot, Spring S
 
 ## Como executar
 
-Pré-requisitos: JDK 25+ e Docker (ou um PostgreSQL 16 local em `localhost:5432`).
+Pré-requisitos: Docker (o JDK 25+ é necessário apenas para rodar a aplicação via Gradle).
 
-Suba o banco:
+Suba a stack completa (banco + aplicação em container), que sobe com o **perfil `prod`**:
 
 ```bash
 docker compose up -d
 ```
 
-Na primeira execução, o Flyway aplica as migrations e o schema é criado automaticamente.
+A aplicação fica em `http://localhost:8080` (Swagger em `http://localhost:8080/swagger-ui.html`). Na primeira execução, o Flyway aplica as migrations e o schema é criado automaticamente. Em modo container **não** há seed de demonstração (perfil `prod`), e a aplicação só inicia com as variáveis `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `JWT_EXPIRATION`, `PAYMENT_WEBHOOK_SECRET` e `PAYMENT_CHECKOUT_URL` definidas (fail-fast). Os valores no `docker-compose.yml` são de demonstração — troque antes de subir em ambiente real.
+
+Para desenvolvimento (com hot reload), rode apenas o banco no Docker e a aplicação via Gradle (perfil dev, com seed):
 
 ```bash
-# Linux/macOS
+docker compose up -d postgres
 ./gradlew bootRun
-
-# Windows
-.\gradlew.bat bootRun
 ```
 
 ### Perfil de demonstração
 
-Ao iniciar, a aplicação cria de forma automática:
+No **perfil dev (padrão, via `gradlew bootRun`)** a aplicação cria de forma automática:
 
 | Recurso | Credencial / conteúdo |
 |---|---|
 | Admin | `admin@admin.com` / `Admin123!` |
 | Categorias | 12 categorias padrão (Eletrônicos, Roupas, ...) |
 
-> **Aviso:** credenciais de demonstração são criadas pelo `AdminInitializer`. Em ambiente real, desative com `app.admin.auto-create=false` e configure senhas via variáveis de ambiente.
+> **Aviso:** credenciais de demonstração são criadas pelo `AdminInitializer`. Em ambiente real, desative com `app.admin.auto-create=false` e configure senhas via variáveis de ambiente. No perfil `prod` (ex.: container do docker compose) os seeds não são criados.
 
 ### Pontos de entrada
 
