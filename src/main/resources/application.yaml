@@ -1,3 +1,6 @@
+# Perfil padrão (desenvolvimento local).
+# Overrides de produção: application-prod.yaml.
+# Ative com SPRING_PROFILES_ACTIVE=prod ou --spring.profiles.active=prod
 spring:
   application:
     name: commerceapi
