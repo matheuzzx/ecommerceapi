@@ -44,3 +44,6 @@ app:
     name: Administrador
     email: admin@admin.com
     password: Admin123!
+
+  categories:
+    auto-create: true
