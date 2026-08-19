@@ -27,7 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByStore(Store store, Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE p.active = true " +
-           "AND (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+           "AND (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%'))) " +
            "AND (:categoryId IS NULL OR p.category.id = :categoryId) " +
            "AND (:storeId IS NULL OR p.store.id = :storeId) " +
            "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
