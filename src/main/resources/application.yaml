@@ -47,3 +47,9 @@ app:
 
   categories:
     auto-create: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

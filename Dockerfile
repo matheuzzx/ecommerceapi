@@ -7,6 +7,7 @@ COPY src ./src
 RUN ./gradlew bootJar --no-daemon
 
 FROM eclipse-temurin:25-jre-alpine AS runtime
+RUN apk add --no-cache curl
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
