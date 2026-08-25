@@ -9,11 +9,9 @@ import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.enums.UserRole;
 import br.com.matheus.commerceapi.exception.*;
 import br.com.matheus.commerceapi.repository.StoreRepository;
-import br.com.matheus.commerceapi.repository.UserRepository;
 import br.com.matheus.commerceapi.utils.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

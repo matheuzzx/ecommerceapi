@@ -3,7 +3,6 @@ package br.com.matheus.commerceapi.dto.request.payment;
 import br.com.matheus.commerceapi.domain.Money;
 import jakarta.validation.constraints.NotNull;
 
-import java.math.BigDecimal;
 
 public record WebhookPaymentEventDto(
         @NotNull String eventId,

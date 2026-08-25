@@ -1,6 +1,5 @@
 package br.com.matheus.commerceapi.service;
 
-import br.com.matheus.commerceapi.domain.Money;
 import br.com.matheus.commerceapi.dto.request.payment.CreatePaymentRequestDto;
 import br.com.matheus.commerceapi.dto.request.payment.WebhookPaymentEventDto;
 import br.com.matheus.commerceapi.dto.response.payment.PaymentResponseDto;

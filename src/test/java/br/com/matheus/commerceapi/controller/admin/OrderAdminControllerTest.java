@@ -3,7 +3,6 @@ package br.com.matheus.commerceapi.controller.admin;
 import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
 import br.com.matheus.commerceapi.service.OrderService;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

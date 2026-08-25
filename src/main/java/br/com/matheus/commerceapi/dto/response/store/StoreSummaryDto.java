@@ -1,9 +1,7 @@
 package br.com.matheus.commerceapi.dto.response.store;
 
-import br.com.matheus.commerceapi.dto.response.auth.UserResponseDto;
 import br.com.matheus.commerceapi.entity.Store;
 
-import java.time.Instant;
 
 public record StoreSummaryDto(
         Long id,

@@ -5,7 +5,6 @@ import br.com.matheus.commerceapi.entity.Payment;
 import br.com.matheus.commerceapi.enums.PaymentMethod;
 import br.com.matheus.commerceapi.enums.PaymentStatus;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record PaymentResponseDto(

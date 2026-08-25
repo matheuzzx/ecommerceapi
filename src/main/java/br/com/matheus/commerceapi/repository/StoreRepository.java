@@ -1,7 +1,6 @@
 package br.com.matheus.commerceapi.repository;
 
 import br.com.matheus.commerceapi.domain.Email;
-import br.com.matheus.commerceapi.entity.Product;
 import br.com.matheus.commerceapi.entity.Store;
 import br.com.matheus.commerceapi.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
