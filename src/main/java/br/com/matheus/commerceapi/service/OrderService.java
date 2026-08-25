@@ -16,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -175,12 +174,12 @@ public class OrderService {
 
     private void confirmStockReservations(Order order) {
         order.getItems().forEach(item ->
-                stockService.confirmReservation(item.getProduct().getId()));
+                stockService.confirmReservation(item.getProduct().getId(), item.getQuantity()));
     }
 
     private void cancelStockReservations(Order order) {
         order.getItems().forEach(item ->
-                stockService.cancelReservation(item.getProduct().getId()));
+                stockService.cancelReservation(item.getProduct().getId(), item.getQuantity()));
     }
 
     private Order findOrderById(Long orderId) {

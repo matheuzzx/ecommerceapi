@@ -62,18 +62,18 @@ public class StockService {
         return stockRepository.save(stock);
     }
 
-    public Stock confirmReservation(Long productId) {
+    public Stock confirmReservation(Long productId, Integer amount) {
         Stock stock = getStockByProductId(productId);
 
-        stock.confirmReservation();
+        stock.confirmReservation(amount);
 
         return stockRepository.save(stock);
     }
 
-    public Stock cancelReservation(Long productId) {
+    public Stock cancelReservation(Long productId, Integer amount) {
         Stock stock = getStockByProductId(productId);
 
-        stock.cancelReservation();
+        stock.cancelReservation(amount);
 
         return stockRepository.save(stock);
     }

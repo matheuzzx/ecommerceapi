@@ -66,28 +66,31 @@ public class Stock {
         updateLastUpdated();
     }
 
-    public void confirmReservation() {
-        if (this.reserved == 0) {
-            throw new ConflictException("No reservation to confirm for product: " + product.getId());
+    public void confirmReservation(Integer amount) {
+        validateReservedAmount(amount, "confirm");
+
+        if (amount > this.quantity) {
+            throw new ConflictException("Reservation amount exceeds physical stock. Requested: " +
+                    amount + ", Stock: " + this.quantity);
         }
 
-        if (this.reserved > this.quantity) {
-            throw new ConflictException("Reserved amount exceeds physical stock. Reserved: " +
-                    this.reserved + ", Available: " + this.quantity);
-        }
-
-        this.quantity -= this.reserved;
-        this.reserved = 0;
+        this.quantity -= amount;
+        this.reserved -= amount;
         updateLastUpdated();
     }
 
-    public void cancelReservation() {
-        if (this.reserved == 0) {
-            throw new ConflictException("No reservation to cancel for product: " + product.getId());
-        }
-
-        this.reserved = 0;
+    public void cancelReservation(Integer amount) {
+        validateReservedAmount(amount, "cancel");
+        this.reserved -= amount;
         updateLastUpdated();
+    }
+
+    private void validateReservedAmount(Integer amount, String operation) {
+        validatePositiveAmount(amount);
+        if (amount > this.reserved) {
+            throw new ConflictException("Insufficient reserved stock to " + operation +
+                    ". Requested: " + amount + ", Reserved: " + this.reserved);
+        }
     }
 
     private void validatePositiveAmount(Integer amount) {

@@ -314,12 +314,10 @@ class StockServiceTest {
         @DisplayName("Should confirm reservation successfully")
         void shouldConfirmReservationSuccessfully() {
             Stock stock = createStock(STOCK_QUANTITY, AMOUNT);
-            Stock stockAfterConfirm = createStock(STOCK_QUANTITY - AMOUNT, 0);
-
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
-            when(stockRepository.save(any(Stock.class))).thenReturn(stockAfterConfirm);
+            when(stockRepository.save(any(Stock.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            Stock result = stockService.confirmReservation(PRODUCT_ID);
+            Stock result = stockService.confirmReservation(PRODUCT_ID, AMOUNT);
 
             assertThat(result.getReserved()).isZero();
             assertThat(result.getQuantity()).isEqualTo(STOCK_QUANTITY - AMOUNT);
@@ -332,11 +330,25 @@ class StockServiceTest {
 
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
-            assertThatThrownBy(() -> stockService.confirmReservation(PRODUCT_ID))
+            assertThatThrownBy(() -> stockService.confirmReservation(PRODUCT_ID, AMOUNT))
                     .isInstanceOf(ConflictException.class)
-                    .hasMessageContaining("No reservation to confirm");
+                    .hasMessageContaining("Insufficient reserved stock");
 
             verify(stockRepository, never()).save(any(Stock.class));
+        }
+
+        @Test
+        @DisplayName("Should confirm only the requested amount and preserve other reservations")
+        void shouldConfirmOnlyRequestedAmount() {
+            Stock stock = createStock(STOCK_QUANTITY, 8);
+
+            when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
+            when(stockRepository.save(any(Stock.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            Stock result = stockService.confirmReservation(PRODUCT_ID, 3);
+
+            assertThat(result.getQuantity()).isEqualTo(7);
+            assertThat(result.getReserved()).isEqualTo(5);
         }
     }
 
@@ -352,12 +364,10 @@ class StockServiceTest {
         @DisplayName("Should cancel reservation successfully")
         void shouldCancelReservationSuccessfully() {
             Stock stock = createStock(STOCK_QUANTITY, AMOUNT);
-            Stock stockAfterCancel = createStock(STOCK_QUANTITY, 0);
-
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
-            when(stockRepository.save(any(Stock.class))).thenReturn(stockAfterCancel);
+            when(stockRepository.save(any(Stock.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            Stock result = stockService.cancelReservation(PRODUCT_ID);
+            Stock result = stockService.cancelReservation(PRODUCT_ID, AMOUNT);
 
             assertThat(result.getReserved()).isZero();
             assertThat(result.getQuantity()).isEqualTo(STOCK_QUANTITY);
@@ -370,11 +380,25 @@ class StockServiceTest {
 
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
 
-            assertThatThrownBy(() -> stockService.cancelReservation(PRODUCT_ID))
+            assertThatThrownBy(() -> stockService.cancelReservation(PRODUCT_ID, AMOUNT))
                     .isInstanceOf(ConflictException.class)
-                    .hasMessageContaining("No reservation to cancel");
+                    .hasMessageContaining("Insufficient reserved stock");
 
             verify(stockRepository, never()).save(any(Stock.class));
+        }
+
+        @Test
+        @DisplayName("Should cancel only the requested amount and preserve other reservations")
+        void shouldCancelOnlyRequestedAmount() {
+            Stock stock = createStock(STOCK_QUANTITY, 8);
+
+            when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.of(stock));
+            when(stockRepository.save(any(Stock.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            Stock result = stockService.cancelReservation(PRODUCT_ID, 3);
+
+            assertThat(result.getQuantity()).isEqualTo(STOCK_QUANTITY);
+            assertThat(result.getReserved()).isEqualTo(5);
         }
     }
 
@@ -418,7 +442,7 @@ class StockServiceTest {
         void shouldThrowOnConfirmReservation() {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> stockService.confirmReservation(PRODUCT_ID))
+            assertThatThrownBy(() -> stockService.confirmReservation(PRODUCT_ID, AMOUNT))
                     .isInstanceOf(NotFoundException.class);
         }
 
@@ -427,7 +451,7 @@ class StockServiceTest {
         void shouldThrowOnCancelReservation() {
             when(stockRepository.findByProductId(PRODUCT_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> stockService.cancelReservation(PRODUCT_ID))
+            assertThatThrownBy(() -> stockService.cancelReservation(PRODUCT_ID, AMOUNT))
                     .isInstanceOf(NotFoundException.class);
         }
     }
