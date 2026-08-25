@@ -32,18 +32,3 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t commerceapi:${{ github.sha }} .
-
-      - name: Login to Docker Hub
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Push Docker image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          docker tag commerceapi:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/commerceapi:${{ github.sha }}
-          docker tag commerceapi:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/commerceapi:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/commerceapi:${{ github.sha }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/commerceapi:latest
