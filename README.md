@@ -13,12 +13,12 @@ Projeto de portfólio que demonstra modelagem de domínio, Spring Boot, Spring S
 - **Autenticação e autorização** com JWT e 3 papéis: `CUSTOMER`, `STOREOWNER` e `ADMIN` (BCrypt + `@PreAuthorize`).
 - **Catálogo público** com busca, filtros (nome, categoria, loja, faixa de preço) e paginação.
 - **Multi-loja**: dono cria sua loja e gerencia produtos e estoque.
-- **Estoque com reserva**: ao criar o pedido o estoque é reservado; no pagamento a reserva é confirmada; no cancelamento é liberada.
-- **Ciclo de vida do pedido**: `CREATED → PAID → SHIPPED → DELIVERED` com cancelamento em `CREATED`/`PAID`.
+- **Estoque com reserva**: ao criar o pedido o estoque é reservado; no pagamento a reserva é confirmada; cancelar um pedido pendente libera a reserva e cancelar um pedido pago repõe o estoque físico.
+- **Ciclo de vida do pedido**: `CREATED → PAID → SHIPPED → DELIVERED`, com cancelamento em `CREATED` e cancelamento com estorno em `PAID`.
 - **Pagamento por webhook assinado** (HMAC-SHA256), com endpoint de simulação para testes locais.
 - **Agenda de endereços** do cliente, com snapshot do endereço de entrega no pedido (value object embutido).
 - **Documentação interativa** via Swagger UI.
-- **223 testes** automatizados (unitários, de controller e de integração com Testcontainers).
+- **231 testes** automatizados (unitários, de controller e de integração com Testcontainers).
 
 ---
 
@@ -135,7 +135,7 @@ export APP_ADMIN_AUTO_CREATE=false
 | GET | `/products/{id}` | Público | Detalhes públicos do produto |
 | POST | `/orders` | `CUSTOMER` | Criar pedido (reserva estoque) |
 | GET | `/orders/{id}` | `CUSTOMER` | Detalhes do próprio pedido |
-| PUT | `/orders/{id}/cancel` | `CUSTOMER` | Cancelar (libera reserva) |
+| PUT | `/orders/{id}/cancel` | `CUSTOMER` | Cancelar (libera reserva ou estorna pagamento) |
 | GET | `/orders/me` | `CUSTOMER` | Meus pedidos |
 | POST | `/payments` | `CUSTOMER` | Criar pagamento (PIX/CREDIT_CARD/BOLETO) |
 | POST | `/payments/{id}/simulate-callback` | `CUSTOMER` | Simular resposta da gateway |
@@ -182,6 +182,8 @@ O fluxo completo (criar loja → produto → cliente comprar → pagar → exped
    - o valor (`amount`) é conferido contra o valor do pagamento.
 4. Evento `payment.succeeded` → pagamento `PAID` e pedido avança para `PAID` (reserva **confirmada** no estoque). Evento `payment.failed` → pagamento `FAILED` (pedido permanece pendente).
 5. Para testar localmente sem gateway real, use `POST /payments/{id}/simulate-callback`.
+
+Ao cancelar um pedido `CREATED`, somente a quantidade reservada por seus itens é liberada. Ao cancelar um pedido `PAID`, o pagamento passa para `REFUNDED`, a data do estorno é registrada e as unidades são devolvidas ao estoque físico. Pedidos `SHIPPED` ou `DELIVERED` não podem ser cancelados nesse fluxo.
 
 O processamento é **idempotente**: reenvios de eventos já processados não alteram o estado.
 

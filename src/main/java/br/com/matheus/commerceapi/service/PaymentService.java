@@ -103,6 +103,17 @@ public class PaymentService {
         return PaymentResponseDto.fromEntity(payment);
     }
 
+    @Transactional
+    public Payment refundPaymentForOrder(Long orderId) {
+        Payment payment = paymentRepository.findByOrderIdAndStatus(orderId, PaymentStatus.PAID)
+                .orElseThrow(() -> new ConflictException("Paid payment not found for order: " + orderId));
+
+        payment.setStatus(PaymentStatus.REFUNDED);
+        payment.setRefundedAt(LocalDateTime.now());
+
+        return paymentRepository.save(payment);
+    }
+
     private Payment findPaymentByTransactionId(String transactionId) {
         return paymentRepository.findByTransactionId(transactionId)
                 .orElseThrow(() -> {

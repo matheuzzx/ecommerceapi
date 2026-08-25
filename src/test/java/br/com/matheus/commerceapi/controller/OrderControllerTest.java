@@ -6,6 +6,7 @@ import br.com.matheus.commerceapi.entity.User;
 import br.com.matheus.commerceapi.exception.NotFoundException;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.OrderService;
+import br.com.matheus.commerceapi.service.OrderCancellationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,9 @@ class OrderControllerTest {
 
     @Mock
     private OrderService orderService;
+
+    @Mock
+    private OrderCancellationService orderCancellationService;
 
     @InjectMocks
     private OrderController orderController;

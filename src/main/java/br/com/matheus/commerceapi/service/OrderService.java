@@ -120,23 +120,6 @@ public class OrderService {
         return deliver(findOrderByStoreOwner(orderId, storeOwnerId));
     }
 
-    @Transactional
-    public OrderResponseDto cancelOrder(Long orderId, Long customerId) {
-        Order order = findOrderByCustomer(orderId, customerId);
-
-        if (!order.canCancel()) {
-            log.warn("Order {} cannot be canceled: status is {}", orderId, order.getStatus());
-            throw new ConflictException("Order cannot be canceled in status: " + order.getStatus());
-        }
-
-        order.cancel();
-        cancelStockReservations(order);
-
-        Order savedOrder = orderRepository.save(order);
-
-        return OrderResponseDto.fromEntity(savedOrder);
-    }
-
     public Page<OrderResponseDto> getCustomerOrders(Long customerId, Pageable pageable){
         Page<Order> orders = orderRepository.findByCustomerId(customerId, pageable);
         return orders.map(OrderResponseDto::fromEntity);
@@ -175,11 +158,6 @@ public class OrderService {
     private void confirmStockReservations(Order order) {
         order.getItems().forEach(item ->
                 stockService.confirmReservation(item.getProduct().getId(), item.getQuantity()));
-    }
-
-    private void cancelStockReservations(Order order) {
-        order.getItems().forEach(item ->
-                stockService.cancelReservation(item.getProduct().getId(), item.getQuantity()));
     }
 
     private Order findOrderById(Long orderId) {

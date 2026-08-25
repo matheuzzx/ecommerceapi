@@ -16,7 +16,8 @@ public record PaymentResponseDto(
         Money amount,
         String transactionId,
         String checkoutUrl,
-        LocalDateTime paidAt
+        LocalDateTime paidAt,
+        LocalDateTime refundedAt
 ) {
     public static PaymentResponseDto fromEntity(Payment payment) {
         return new PaymentResponseDto(
@@ -27,7 +28,8 @@ public record PaymentResponseDto(
                 payment.getAmount(),
                 payment.getTransactionId(),
                 payment.getCheckoutUrl(),
-                payment.getPaidAt()
+                payment.getPaidAt(),
+                payment.getRefundedAt()
         );
     }
 }

@@ -50,7 +50,7 @@ public interface OrderApi {
             @PathVariable Long orderId);
 
     @Operation(summary = "Cancel an order",
-            description = "Cancels the customer's order and releases the reserved stock. Only allowed while CREATED or PAID.")
+            description = "Cancels a CREATED order and releases its reservation, or refunds a PAID order and restores physical stock. SHIPPED and DELIVERED orders cannot be canceled.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Order canceled",
                     content = @Content(schema = @Schema(implementation = OrderResponseDto.class))),

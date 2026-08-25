@@ -274,4 +274,39 @@ class PaymentServiceTest {
                     .isInstanceOf(NotFoundException.class);
         }
     }
+
+    @Nested
+    @DisplayName("Refund Payment Tests")
+    class RefundPaymentTests {
+
+        @Test
+        @DisplayName("Should refund a paid payment")
+        void shouldRefundPaidPayment() {
+            Payment payment = createPendingPayment(createOrder());
+            payment.setStatus(PaymentStatus.PAID);
+
+            when(paymentRepository.findByOrderIdAndStatus(ORDER_ID, PaymentStatus.PAID))
+                    .thenReturn(Optional.of(payment));
+            when(paymentRepository.save(payment)).thenReturn(payment);
+
+            Payment result = paymentService.refundPaymentForOrder(ORDER_ID);
+
+            assertThat(result.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+            assertThat(result.getRefundedAt()).isNotNull();
+            verify(paymentRepository).save(payment);
+        }
+
+        @Test
+        @DisplayName("Should reject refund when paid payment does not exist")
+        void shouldRejectRefundWithoutPaidPayment() {
+            when(paymentRepository.findByOrderIdAndStatus(ORDER_ID, PaymentStatus.PAID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> paymentService.refundPaymentForOrder(ORDER_ID))
+                    .isInstanceOf(ConflictException.class)
+                    .hasMessageContaining("Paid payment not found");
+
+            verify(paymentRepository, never()).save(any(Payment.class));
+        }
+    }
 }

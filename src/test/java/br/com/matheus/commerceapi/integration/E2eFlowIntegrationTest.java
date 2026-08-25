@@ -110,6 +110,44 @@ class E2eFlowIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.stockQuantity").value(5));
     }
 
+    @Test
+    @DisplayName("Cancel paid order refunds payment and restores physical stock")
+    void cancelPaidOrderRefundsPaymentAndRestoresStock() throws Exception {
+        String ownerToken = registerAndLogin("Owner Refund", "owner.refund@test.com", "STOREOWNER");
+        Long storeId = createStore(ownerToken, "Refund Store", "store.refund@test.com");
+
+        String adminToken = login("admin@admin.com", "Admin123!");
+        Long categoryId = firstCategoryId(adminToken);
+        Long productId = createProduct(ownerToken, storeId, categoryId, "Refund Product", "75.00", 5);
+
+        String customerToken = registerAndLogin("Customer Refund", "customer.refund@test.com", "CUSTOMER");
+        Long addressId = createAddress(customerToken);
+        Long orderId = createOrder(customerToken, storeId, addressId, productId, 2);
+
+        JsonNode payment = createPayment(customerToken, orderId, "PIX");
+        sendSignedWebhook(payment.get("transactionId").asText(), "payment.succeeded",
+                payment.get("amount").decimalValue());
+
+        mockMvc.perform(get("/products/{id}", productId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.stockQuantity").value(3));
+
+        mockMvc.perform(put("/orders/{id}/cancel", orderId)
+                        .header("Authorization", bearer(customerToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELED"));
+
+        mockMvc.perform(get("/payments/{id}", payment.get("id").asLong())
+                        .header("Authorization", bearer(customerToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REFUNDED"))
+                .andExpect(jsonPath("$.refundedAt").isNotEmpty());
+
+        mockMvc.perform(get("/products/{id}", productId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.stockQuantity").value(5));
+    }
+
     private void sendSignedWebhook(String transactionId, String eventType, BigDecimal amount) throws Exception {
         String payload = """
                 {"eventId":"evt-%s","eventType":"%s","transactionId":"%s","amount":%s}

@@ -5,6 +5,7 @@ import br.com.matheus.commerceapi.dto.response.order.OrderResponseDto;
 import br.com.matheus.commerceapi.docs.controller.OrderApi;
 import br.com.matheus.commerceapi.security.model.UserDetailsImpl;
 import br.com.matheus.commerceapi.service.OrderService;
+import br.com.matheus.commerceapi.service.OrderCancellationService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,9 +22,11 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController implements OrderApi {
 
     private final OrderService orderService;
+    private final OrderCancellationService orderCancellationService;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, OrderCancellationService orderCancellationService) {
         this.orderService = orderService;
+        this.orderCancellationService = orderCancellationService;
     }
 
     @PostMapping
@@ -54,7 +57,7 @@ public class OrderController implements OrderApi {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long orderId) {
 
-        OrderResponseDto order = orderService.cancelOrder(orderId, userDetails.getId());
+        OrderResponseDto order = orderCancellationService.cancelOrder(orderId, userDetails.getId());
         return ResponseEntity.ok(order);
     }
 
