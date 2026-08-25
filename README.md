@@ -18,7 +18,7 @@ Projeto de portfólio que demonstra modelagem de domínio, Spring Boot, Spring S
 - **Pagamento por webhook assinado** (HMAC-SHA256), com endpoint de simulação para testes locais.
 - **Agenda de endereços** do cliente, com snapshot do endereço de entrega no pedido (value object embutido).
 - **Documentação interativa** via Swagger UI.
-- **231 testes** automatizados (unitários, de controller e de integração com Testcontainers).
+- **233 testes** automatizados (unitários, de controller e de integração com Testcontainers).
 
 ---
 
@@ -176,6 +176,8 @@ O fluxo completo (criar loja → produto → cliente comprar → pagar → exped
 
 1. O `CUSTOMER` cria um pedido; o estoque é **reservado** e o pedido fica `CREATED`.
 2. O `CUSTOMER` cria um pagamento (`PENDING`) vinculado ao pedido.
+   - ao criar uma nova tentativa, pagamentos anteriores ainda `PENDING` para o mesmo pedido passam para `CANCELED`;
+   - tentativas `FAILED`, `CANCELED` e `REFUNDED` permanecem registradas como histórico.
 3. A "gateway" notifica o status **via webhook** em `POST /webhooks/payments`:
    - o corpo é assinado com **HMAC-SHA256** usando `PAYMENT_WEBHOOK_SECRET`;
    - a assinatura viaja no header `Stripe-Signature`; a API verifica com comparação em tempo constante (`MessageDigest.isEqual`) antes de processar;

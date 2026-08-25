@@ -40,6 +40,8 @@ public class PaymentService {
             throw new ConflictException("Order must be CREATED to be paid");
         }
 
+        cancelPendingPayments(order.getId());
+
         String transactionId = UUID.randomUUID().toString();
 
         Payment payment = Payment.builder()
@@ -119,6 +121,17 @@ public class PaymentService {
                     log.warn("Payment not found for transaction id: {}", transactionId);
                     return new NotFoundException("Payment not found for transaction id: " + transactionId);
                 });
+    }
+
+    private void cancelPendingPayments(Long orderId) {
+        var pendingPayments = paymentRepository.findAllByOrderIdAndStatus(orderId, PaymentStatus.PENDING);
+        if (pendingPayments.isEmpty()) {
+            return;
+        }
+
+        pendingPayments.forEach(payment -> payment.setStatus(PaymentStatus.CANCELED));
+        paymentRepository.saveAll(pendingPayments);
+        log.info("Canceled {} previous pending payment(s) for order {}", pendingPayments.size(), orderId);
     }
 
     private Payment findPaymentByCustomer(Long paymentId, Long customerId) {

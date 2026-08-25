@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -93,6 +94,27 @@ class PaymentServiceTest {
             assertThat(result.paidAt()).isNull();
 
             verify(orderService, never()).markOrderAsPaid(anyLong(), anyLong());
+        }
+
+        @Test
+        @DisplayName("Should cancel previous pending payment when creating a new attempt")
+        void shouldCancelPreviousPendingPayment() {
+            ReflectionTestUtils.setField(paymentService, "checkoutUrl", CHECKOUT_URL);
+            Order order = createOrder();
+            Payment previousPayment = createPendingPayment(order);
+            CreatePaymentRequestDto request = new CreatePaymentRequestDto(ORDER_ID, PaymentMethod.CREDIT_CARD);
+
+            when(orderService.findOrderByCustomer(ORDER_ID, USER_ID)).thenReturn(order);
+            when(paymentRepository.findAllByOrderIdAndStatus(ORDER_ID, PaymentStatus.PENDING))
+                    .thenReturn(List.of(previousPayment));
+            when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            PaymentResponseDto result = paymentService.createPayment(USER_ID, request);
+
+            assertThat(previousPayment.getStatus()).isEqualTo(PaymentStatus.CANCELED);
+            assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
+            assertThat(result.method()).isEqualTo(PaymentMethod.CREDIT_CARD);
+            verify(paymentRepository).saveAll(List.of(previousPayment));
         }
 
         @Test

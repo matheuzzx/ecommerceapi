@@ -148,6 +148,50 @@ class E2eFlowIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.stockQuantity").value(5));
     }
 
+    @Test
+    @DisplayName("New payment attempt cancels the previous pending payment")
+    void newPaymentAttemptCancelsPreviousPendingPayment() throws Exception {
+        String ownerToken = registerAndLogin("Owner Retry", "owner.retry@test.com", "STOREOWNER");
+        Long storeId = createStore(ownerToken, "Retry Store", "store.retry@test.com");
+
+        String adminToken = login("admin@admin.com", "Admin123!");
+        Long categoryId = firstCategoryId(adminToken);
+        Long productId = createProduct(ownerToken, storeId, categoryId, "Retry Product", "40.00", 4);
+
+        String customerToken = registerAndLogin("Customer Retry", "customer.retry@test.com", "CUSTOMER");
+        Long addressId = createAddress(customerToken);
+        Long orderId = createOrder(customerToken, storeId, addressId, productId, 1);
+
+        JsonNode firstPayment = createPayment(customerToken, orderId, "BOLETO");
+        JsonNode secondPayment = createPayment(customerToken, orderId, "PIX");
+
+        mockMvc.perform(get("/payments/{id}", firstPayment.get("id").asLong())
+                        .header("Authorization", bearer(customerToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELED"));
+
+        mockMvc.perform(get("/payments/{id}", secondPayment.get("id").asLong())
+                        .header("Authorization", bearer(customerToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDING"));
+
+        sendSignedWebhook(firstPayment.get("transactionId").asText(), "payment.succeeded",
+                firstPayment.get("amount").decimalValue());
+
+        mockMvc.perform(get("/orders/{id}", orderId)
+                        .header("Authorization", bearer(customerToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CREATED"));
+
+        sendSignedWebhook(secondPayment.get("transactionId").asText(), "payment.succeeded",
+                secondPayment.get("amount").decimalValue());
+
+        mockMvc.perform(get("/orders/{id}", orderId)
+                        .header("Authorization", bearer(customerToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PAID"));
+    }
+
     private void sendSignedWebhook(String transactionId, String eventType, BigDecimal amount) throws Exception {
         String payload = """
                 {"eventId":"evt-%s","eventType":"%s","transactionId":"%s","amount":%s}
