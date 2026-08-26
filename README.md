@@ -32,7 +32,7 @@ Suba a stack completa (banco + aplicação em container), que sobe com o **perfi
 docker compose up -d
 ```
 
-A aplicação fica em `http://localhost:8080` (Swagger em `http://localhost:8080/swagger-ui.html`). Na primeira execução, o Flyway aplica as migrations e o schema é criado automaticamente. Em modo container **não** há seed de demonstração (perfil `prod`), e a aplicação só inicia com as variáveis `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `JWT_EXPIRATION`, `PAYMENT_WEBHOOK_SECRET` e `PAYMENT_CHECKOUT_URL` definidas (fail-fast). Os valores no `docker-compose.yml` são de demonstração — troque antes de subir em ambiente real.
+A aplicação fica em `http://localhost:8080` (Swagger em `http://localhost:8080/swagger-ui.html`). Na primeira execução, o Flyway aplica as migrations, cria o schema e os inicializadores cadastram o admin e as categorias de demonstração. O container usa o perfil `prod` e recebe pelo `docker-compose.yml` as variáveis obrigatórias `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `JWT_EXPIRATION`, `PAYMENT_WEBHOOK_SECRET`, `PAYMENT_CHECKOUT_URL` e `CORS_ALLOWED_ORIGINS`. Os valores são próprios para demonstração local.
 
 Para desenvolvimento (com hot reload), rode apenas o banco no Docker e a aplicação via Gradle (perfil dev, com seed):
 
@@ -50,7 +50,7 @@ No **perfil dev (padrão, via `gradlew bootRun`)** a aplicação cria de forma a
 | Admin | `admin@admin.com` / `Admin123!` |
 | Categorias | 12 categorias padrão (Eletrônicos, Roupas, ...) |
 
-> **Aviso:** credenciais de demonstração são criadas pelo `AdminInitializer`. Em ambiente real, desative com `app.admin.auto-create=false` e configure senhas via variáveis de ambiente. No perfil `prod` (ex.: container do docker compose) os seeds não são criados.
+> **Aviso:** as credenciais e categorias de demonstração também são criadas no container, pois o perfil `prod` herda `app.admin.auto-create=true` e `app.categories.auto-create=true` da configuração base. Esse comportamento é intencional para deixar o projeto utilizável imediatamente e não deve ser reproduzido em um ambiente de produção real.
 
 ### Pontos de entrada
 
@@ -68,7 +68,7 @@ A aplicação tem dois perfis; o **padrão (dev)** é usado quando nenhum perfil
 | Perfil | Quando usar | Banco de dados |
 |---|---|---|
 | `(padrão)` | Desenvolvimento local (`bootRun`) | PostgreSQL local em `localhost:5432` (credenciais em `application.yaml`) |
-| `prod` | Produção / deploy | PostgreSQL via variáveis de ambiente (obrigatórias) |
+| `prod` | Execução completa pelo Docker Compose | PostgreSQL via variáveis de ambiente (obrigatórias) |
 
 ### Como ativar um perfil
 
@@ -96,7 +96,7 @@ Para conferir o perfil ativo, veja a primeira linha do log de inicialização:
 The following 1 profile is active: "prod"
 ```
 
-> O arquivo do perfil **mescla** com o `application.yaml` base — ele sobrescreve apenas o que precisa. No `prod`, o datasource e os segredos vêm de env vars (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `JWT_EXPIRATION`, `PAYMENT_WEBHOOK_SECRET`, `PAYMENT_CHECKOUT_URL`) e a aplicação **não inicia** se alguma estiver faltando (fail-fast proposital).
+> O arquivo do perfil **mescla** com o `application.yaml` base — ele sobrescreve apenas o que precisa. No `prod`, o datasource, os segredos e o CORS vêm de env vars (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `JWT_EXPIRATION`, `PAYMENT_WEBHOOK_SECRET`, `PAYMENT_CHECKOUT_URL`, `CORS_ALLOWED_ORIGINS`) e a aplicação **não inicia** se alguma estiver faltando. As configurações de inicialização do admin e das categorias são herdadas do arquivo base.
 
 ---
 

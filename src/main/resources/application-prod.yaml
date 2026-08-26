@@ -1,5 +1,6 @@
-# Perfil de producao: configuracoes obrigatorias via variaveis de ambiente.
-# Sem os valores definidos, a aplicacao falha ao iniciar (fail-fast) — comportamento desejado em producao.
+# Perfil usado pela stack completa do Docker Compose.
+# Conexao, segredos e CORS sao obrigatorios via variaveis de ambiente.
+# Admin e categorias de demonstracao permanecem ativos por heranca do application.yaml.
 spring:
   datasource:
     url: ${DB_URL}
@@ -25,8 +26,5 @@ payment:
   checkout-url: ${PAYMENT_CHECKOUT_URL}
 
 app:
-  admin:
-    auto-create: false
-
-  categories:
-    auto-create: false
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
