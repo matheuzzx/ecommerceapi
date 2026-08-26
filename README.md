@@ -18,7 +18,7 @@ Projeto de portfólio que demonstra modelagem de domínio, Spring Boot, Spring S
 - **Pagamento por webhook assinado** (HMAC-SHA256), com endpoint de simulação para testes locais.
 - **Agenda de endereços** do cliente, com snapshot do endereço de entrega no pedido (value object embutido).
 - **Documentação interativa** via Swagger UI.
-- **233 testes** automatizados (unitários, de controller e de integração com Testcontainers).
+- **235 testes** automatizados (unitários, de controller e de integração com Testcontainers).
 
 ---
 
@@ -110,6 +110,7 @@ Todas as propriedades possuem padrões sensatos para ambiente local (`src/main/r
 | `JWT_EXPIRATION` | `86400000` | Validade do token em ms |
 | `PAYMENT_WEBHOOK_SECRET` | `webhook-secret-simulado` | Segredo usado na verificação da assinatura do webhook |
 | `PAYMENT_CHECKOUT_URL` | `http://localhost:8080/checkout` | URL de checkout exposta no payment |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:3000,http://localhost:5173` | Origens de frontend permitidas, separadas por vírgula |
 | `APP_ADMIN_AUTO_CREATE` | `true` | Cria admin de demonstração |
 | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/ecommerce` | Conexão do banco |
 

@@ -5,11 +5,36 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class SecurityIntegrationTest extends AbstractIntegrationTest {
+
+    @Test
+    @DisplayName("CORS preflight allows a configured frontend origin")
+    void corsPreflightAllowsConfiguredOrigin() throws Exception {
+        mockMvc.perform(options("/orders")
+                        .header("Origin", "http://localhost:5173")
+                        .header("Access-Control-Request-Method", "POST")
+                        .header("Access-Control-Request-Headers", "Authorization,Content-Type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"))
+                .andExpect(header().string("Access-Control-Allow-Methods", org.hamcrest.Matchers.containsString("POST")))
+                .andExpect(header().string("Access-Control-Allow-Headers", org.hamcrest.Matchers.containsStringIgnoringCase("authorization")));
+    }
+
+    @Test
+    @DisplayName("CORS preflight rejects an origin that is not configured")
+    void corsPreflightRejectsUnknownOrigin() throws Exception {
+        mockMvc.perform(options("/orders")
+                        .header("Origin", "https://untrusted.example")
+                        .header("Access-Control-Request-Method", "POST"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+    }
 
     @Test
     @DisplayName("Protected endpoints reject unauthenticated requests with 401")
